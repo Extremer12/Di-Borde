@@ -1,0 +1,57 @@
+:root {
+  /* Artisanal Brand Palette - Di Borde */
+  --color-primary: #C83820;             /* Rojo Terracota Artesanal */
+  --color-primary-hover: #B2301A;
+  --color-primary-dark: #8E2412;
+  --color-primary-subtle: #FDF2EE;
+  --color-primary-glow: rgba(200, 56, 32, 0.14);
+  
+  --color-cream: #FAF8F5;               /* Fondo Cálido Crema Panadería de Autor */
+  --color-cream-light: #FFFFFF;         /* Blanco Neutro */
+  --color-cream-surface: #F3EFE8;        /* Superficie sutil */
+  --color-cream-dark: #EAE4D9;          /* Masa / Tostado */
+  
+  --color-carbon: #1C1917;              /* Carbón Cálido (Warm Stone 900) */
+  --color-carbon-light: #292524;
+  --color-carbon-muted: #57534E;        /* Gris Cálido / Texto Secundario */
+  --color-carbon-subtle: #A8A29E;
+  
+  --color-border: #E7E5E4;              /* Stone 200 sutil */
+  --color-border-subtle: rgba(28, 25, 23, 0.06);
+  --color-border-focus: #C83820;
+  
+  --color-success: #15803D;             /* Verde bosque sobrio */
+  --color-success-bg: #F0FDF4;
+  --color-whatsapp: #1E3A2F;            /* Verde bosque elegante para marca gastronómica */
+  
+  /* Typography: Editorial Serif for headings + Modern Sans for UI */
+  --font-serif: 'Fraunces', 'Playfair Display', Georgia, serif;
+  --font-headline: 'Fraunces', 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
+  /* Radii - Minimalist (Linear style: rounded-lg / rounded-md, no oversized 2xl/3xl everywhere) */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-pill: 9999px;
+  
+  /* Shadows - Flat & Subtle */
+  --shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.04);
+  --shadow-card: 0 1px 3px rgba(28, 25, 23, 0.04);
+  --shadow-card-hover: 0 6px 16px -2px rgba(28, 25, 23, 0.07);
+  --shadow-floating: 0 10px 25px -3px rgba(28, 25, 23, 0.2);
+  --shadow-modal: 0 20px 40px -8px rgba(28, 25, 23, 0.25);
+  
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  
+  /* Container sizes */
+  --max-width: 1140px;
+  --header-height: 64px;
+  --bottom-nav-height: 60px;
+  --shadow-toast: 0 8px 24px rgba(28, 25, 23, 0.15);
+}

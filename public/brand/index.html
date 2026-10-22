@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DON BORDE — Manual de Identidad Visual & Sistema de Marca</title>
+<link rel="icon" href="favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --red: #D7381E;
+    --red-hover: #b82d16;
+    --cream: #F7EFE1;
+    --coal: #1E1714;
+    --paper: #FAF6EF;
+    --card-bg: #FFFFFF;
+    --line: #E5DCCE;
+    --line-subtle: #EDE6DA;
+    --text-muted: #6B615B;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--coal);
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 48px 40px 120px; }
+
+  /* Header */
+  header.brand-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid var(--coal);
+    padding-bottom: 20px;
+    margin-bottom: 48px;
+  }
+  .brand-nav .title-group h1 {
+    font-size: 13px;
+    letter-spacing: .28em;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+  }
+  .brand-nav .title-group p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .brand-nav .status-pill {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .15em;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--red);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  /* Section Titles */
+  .section-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-tag::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+  }
+
+  /* Cards & Stages */
+  .grid { display: grid; gap: 24px; }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(30, 23, 20, 0.03);
+  }
+  .card .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+  }
+  .card .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+  .card .card-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 240px;
+    border-radius: 14px;
+    background: var(--paper);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stage.stage-clean { background: #FFFFFF; border: 1px dashed var(--line); }
+  .stage.stage-dark { background: var(--coal); color: #fff; }
+  .stage.stage-red { background: var(--red); color: #fff; }
+  .stage.stage-cream { background: var(--cream); }
+
+  /* 01 Hero Logo */
+  .hero-card .stage { min-height: 440px; padding: 56px 40px; }
+  .hero-card img { max-width: 88%; max-height: 260px; width: auto; height: auto; object-fit: contain; }
+
+  /* Concept split */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 24px;
+    margin: 32px 0 48px;
+  }
+  .concept-box {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 40px;
+  }
+  .concept-box h2 {
+    font-size: 38px;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    margin-bottom: 20px;
+  }
+  .concept-box h2 em { font-style: normal; color: var(--red); }
+  .concept-box p {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--coal);
+    margin-bottom: 16px;
+  }
+  .concept-box p.lead {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--coal);
+  }
+  .concept-box .bullets {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .concept-box .bullet {
+    background: var(--paper);
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .concept-box .bullet span {
+    display: block;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  /* Grid Layouts */
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+  /* Reduction Tests */
+  .reduction-strip {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    padding: 32px 16px;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .reduction-strip figure {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .reduction-strip figcaption {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 12px;
+  }
+
+  /* Color Palette */
+  .palette-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .swatch {
+    padding: 32px 24px;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .swatch .sw-name { font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+  .swatch .sw-code { font-family: 'Space Mono', monospace; font-size: 12px; line-height: 1.7; opacity: .88; }
+
+  /* Application Mockups */
+  /* Social Avatar Card */
+  .ig-card {
+    width: 320px;
+    background: #fff;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 16px 40px rgba(0,0,0,.08);
+    border: 1px solid var(--line-subtle);
+  }
+  .ig-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+  .ig-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--red);
+    padding: 2px;
+  }
+  .ig-avatar img { width: 100%; height: 100%; display: block; border-radius: 50%; }
+  .ig-info .ig-handle { font-weight: 800; font-size: 15px; }
+  .ig-info .ig-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; border-radius: 12px; overflow: hidden; }
+  .ig-tile { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+
+  /* Packaging: Kraft Pizza Box */
+  .pizza-box-mockup {
+    width: 360px;
+    height: 360px;
+    background: #DFC7A5;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0,0,0,.22), inset 0 2px 4px rgba(255,255,255,.3);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 32px;
+    border: 1px solid #c9b08d;
+  }
+  .pizza-box-mockup .crust-accent {
+    position: absolute;
+    right: -80px;
+    top: 60px;
+    width: 280px;
+    opacity: 0.14;
+    filter: blur(1px);
+  }
+  .pizza-box-mockup .box-logo {
+    width: 76%;
+    position: relative;
+    z-index: 2;
+  }
+  .pizza-box-mockup .red-band {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 32%;
+    background: var(--red);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    color: var(--cream);
+    z-index: 2;
+  }
+  .red-band .band-product { font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+  .red-band .band-product small { display: block; font-size: 11px; font-family: 'Space Mono', monospace; font-weight: 400; opacity: .9; margin-top: 4px; }
+  .red-band .band-seal { width: 56px; height: 56px; }
+
+  /* Packaging: Kraft Paper Bag */
+  .kraft-bag {
+    width: 260px;
+    height: 340px;
+    background: linear-gradient(180deg, #c9a77c 0%, #b8925f 100%);
+    border-radius: 6px 6px 12px 12px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    box-shadow: 0 25px 50px rgba(0,0,0,.2), inset 0 12px 0 rgba(0,0,0,.08);
+  }
+  .kraft-bag::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    width: 110px;
+    height: 75px;
+    border: 8px solid #9c7b4a;
+    border-bottom: none;
+    border-radius: 60px 60px 0 0;
+  }
+  .kraft-bag img.bag-logo { width: 68%; }
+  .kraft-bag .bag-tagline {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .24em;
+    color: var(--coal);
+    font-weight: 700;
+    opacity: .85;
+  }
+
+  /* Sticker Mockups */
+  .sticker-cluster {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+  .sticker-diecut {
+    border-radius: 50%;
+    background: #fff;
+    padding: 10px;
+    box-shadow: 0 16px 36px rgba(0,0,0,.3);
+    transition: transform 0.2s ease;
+  }
+  .sticker-diecut.large { width: 220px; height: 220px; transform: rotate(-5deg); }
+  .sticker-diecut.small { width: 120px; height: 120px; transform: rotate(7deg); }
+  .sticker-diecut img { width: 100%; height: 100%; display: block; border-radius: 50%; }
+
+  /* Criteria checklist */
+  .checklist-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px 28px;
+    margin-top: 12px;
+  }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .check-badge {
+    width: 22px;
+    height: 22px;
+    background: #E8F5E9;
+    color: #2E7D32;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  section { margin-top: 56px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- Brand Manual Top Navigation -->
+  <header class="brand-nav">
+    <div class="title-group">
+      <h1>DON BORDE — SISTEMA DE IDENTIDAD VISUAL</h1>
+      <p>Manual oficial de marca, aplicaciones y sistema de diseño vectorial.</p>
+    </div>
+    <div class="status-pill">VERSIÓN 1.0 · VECTOR PURO</div>
+  </header>
+
+  <!-- 01 · LOGO PRINCIPAL -->
+  <div class="section-tag">01 · Logotipo Principal Oficial</div>
+  <div class="grid hero-card">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">DON BORDE — Lockup Horizontal Maestro</div>
+          <div class="card-sub">[ SÍMBOLO ] + WORDMARK TIPOGRÁFICO EN 2 NIVELES</div>
+        </div>
+        <div class="card-sub">Formato: SVG Curvas Puras (Zero-font dependency)</div>
+      </div>
+      <div class="stage">
+        <img src="horizontal-color.svg" alt="Don Borde Logotipo Principal" />
+      </div>
+    </div>
+  </div>
+
+  <!-- CONCEPTO CENTRAL & CONSTRUCCIÓN -->
+  <div class="concept-grid">
+    <div class="concept-box">
+      <div class="section-tag" style="margin-bottom:12px;">Concepto de Diseño</div>
+      <h2>El <em>borde</em> de la masa<br/>es el corazón de la marca.</h2>
+      <p class="lead">
+        “Don Borde” nace del cruce entre el apellido familiar (Bordón), la dedicación artesanal de un “Don” y el atributo más codiciado de una buena masa: un borde crocante, aireado y dorado al horno de piedra.
+      </p>
+      <p>
+        El símbolo sintetiza esta idea con una sola geometría contundente: un <b>anillo circular en Rojo Tomate</b> (el borde de la pizzeta) cuya contraforma interior en espacio negativo talla con precisión la letra <b>D</b> de <em>Don</em>.
+      </p>
+      <div class="bullets">
+        <div class="bullet">
+          <span>MEMORABILIDAD</span>
+          "El logo del borde con la D adentro"
+        </div>
+        <div class="bullet">
+          <span>ESCALABILIDAD</span>
+          Reconocible desde 16px hasta cartelería
+        </div>
+        <div class="bullet">
+          <span>COHERENCIA B2B / B2C</span>
+          De una faja de prepizza a marca masiva
+        </div>
+        <div class="bullet">
+          <span>REPRODUCCIÓN</span>
+          Funciona a 1 tinta, stamping o serigrafía
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Geometría & Proporciones</div>
+          <div class="card-sub">Grilla modular de 200u con espesor perimetral constante</div>
+        </div>
+      </div>
+      <div class="stage" style="background:#FAF6EF;">
+        <svg viewBox="-20 -20 240 240" width="320" style="max-width:100%;">
+          <!-- Grilla de construcción -->
+          <circle cx="100" cy="100" r="100" fill="none" stroke="#D7381E" stroke-opacity=".25" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <circle cx="96.5" cy="100" r="48" fill="none" stroke="#1E1714" stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <line x1="-15" y1="100" x2="215" y2="100" stroke="#1E1714" stroke-opacity=".2"/>
+          <line x1="100" y1="-15" x2="100" y2="215" stroke="#1E1714" stroke-opacity=".2"/>
+          <!-- Símbolo superpuesto -->
+          <image href="symbol-color.svg" x="0" y="0" width="200" height="200" opacity=".95"/>
+          <!-- Cotas -->
+          <text x="100" y="-8" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#D7381E" font-weight="700">Ø 200 (Borde Exterior)</text>
+          <text x="96.5" y="104" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#1E1714" opacity=".7">Contraforma D (h: 96)</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 · SÍMBOLO & 03 · WORDMARK -->
+  <section>
+    <div class="section-tag">02 · Símbolo Independiente & 03 · Wordmark</div>
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">02. Símbolo Independiente</div>
+            <div class="card-sub">Icono puro para favicon, avatar y packaging</div>
+          </div>
+        </div>
+        <div class="stage">
+          <img src="symbol-color.svg" style="width:62%;" alt="Símbolo Don Borde" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">03. Wordmark (Variante Hero)</div>
+            <div class="card-sub">La 'O' integra el anillo de la marca en rojo</div>
+          </div>
+        </div>
+        <div class="stage">
+          <img src="wordmark-color.svg" style="width:78%;" alt="Wordmark Hero Don Borde" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">03b. Wordmark (Variante Sólida)</div>
+            <div class="card-sub">Tipografía pura 100% en negro carbón</div>
+          </div>
+        </div>
+        <div class="stage">
+          <img src="wordmark-solid-coal.svg" style="width:78%;" alt="Wordmark Sólido" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 · HORIZONTAL EN 1 LÍNEA & 05 · VERTICAL -->
+  <section>
+    <div class="section-tag">04 · Versión Horizontal & 05 · Versión Vertical</div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">04. Versión Horizontal en 1 Línea</div>
+            <div class="card-sub">Para cintas de empaque, barras de navegación y tickets</div>
+          </div>
+        </div>
+        <div class="stage">
+          <img src="wordmark-line-color.svg" style="width:88%;" alt="Horizontal en 1 línea" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">05. Versión Vertical / Apilada</div>
+            <div class="card-sub">Símbolo superior centrado sobre el nombre</div>
+          </div>
+        </div>
+        <div class="stage">
+          <img src="vertical-color.svg" style="width:48%;" alt="Vertical Centrado" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 · MONOCROMÁTICA & 07 · NEGATIVAS -->
+  <section>
+    <div class="section-tag">06 · Versión Monocromática & 07 · Versiones Negativas</div>
+    <div class="grid grid-4">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">06. Monocromática</div>
+            <div class="card-sub">Negro Carbón sobre blanco / papel</div>
+          </div>
+        </div>
+        <div class="stage stage-clean">
+          <img src="horizontal-coal.svg" style="width:85%;" alt="Monocromática Carbón" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">07. Negativa sobre Carbón</div>
+            <div class="card-sub">Crema Masa + Rojo Tomate</div>
+          </div>
+        </div>
+        <div class="stage stage-dark">
+          <img src="horizontal-negative.svg" style="width:85%;" alt="Negativa sobre carbón" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">07b. Blanco sobre Rojo</div>
+            <div class="card-sub">Impacto en etiquetas y delantales</div>
+          </div>
+        </div>
+        <div class="stage stage-red">
+          <img src="horizontal-white.svg" style="width:85%;" alt="Blanco sobre rojo" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">07c. Símbolo Monocromo</div>
+            <div class="card-sub">Grabado a fuego / sellos de goma</div>
+          </div>
+        </div>
+        <div class="stage stage-clean">
+          <img src="symbol-coal.svg" style="width:52%;" alt="Símbolo Monocromo" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REGLA DE REDUCCIÓN -->
+  <section>
+    <div class="section-tag">Comprobación de Escala & Legibilidad Extrema</div>
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Prueba de Reducción Progresiva</div>
+          <div class="card-sub">De 16px (favicon diminuto) a 5cm en etiqueta de prepizza</div>
+        </div>
+      </div>
+      <div class="reduction-strip">
+        <figure>
+          <img src="symbol-color.svg" width="16" height="16" alt="16px" />
+          <figcaption>16 px</figcaption>
+        </figure>
+        <figure>
+          <img src="symbol-color.svg" width="24" height="24" alt="24px" />
+          <figcaption>24 px</figcaption>
+        </figure>
+        <figure>
+          <img src="favicon.svg" width="32" height="32" alt="Favicon 32px" />
+          <figcaption>Favicon 32 px</figcaption>
+        </figure>
+        <figure>
+          <img src="symbol-color.svg" width="48" height="48" alt="48px" />
+          <figcaption>48 px</figcaption>
+        </figure>
+        <figure>
+          <img src="symbol-color.svg" width="80" height="80" alt="80px" />
+          <figcaption>80 px</figcaption>
+        </figure>
+        <figure>
+          <img src="horizontal-color.svg" width="140" alt="3 cm" />
+          <figcaption>3 cm (Sticker faja)</figcaption>
+        </figure>
+        <figure>
+          <img src="horizontal-color.svg" width="220" alt="5 cm" />
+          <figcaption>5 cm (Etiqueta bolsa)</figcaption>
+        </figure>
+        <figure>
+          <img src="wordmark-line-coal.svg" width="180" alt="Cinta continua" />
+          <figcaption>Cinta adhesiva</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- PALETA DE COLOR -->
+  <section>
+    <div class="section-tag">Paleta Cromática Oficial</div>
+    <div class="palette-grid">
+      <div class="swatch" style="background:#D7381E; color:#FFF;">
+        <div>
+          <div class="sw-name">Rojo Tomate</div>
+          <div style="font-size:12px; opacity:.85; margin-top:2px;">Color Primario de Acento</div>
+        </div>
+        <div class="sw-code">
+          HEX: #D7381E<br/>
+          RGB: 215, 56, 30<br/>
+          CMYK: 0 / 85 / 95 / 5<br/>
+          Pantone: 7417 C
+        </div>
+      </div>
+
+      <div class="swatch" style="background:#1E1714; color:#FFF;">
+        <div>
+          <div class="sw-name">Negro Carbón</div>
+          <div style="font-size:12px; opacity:.85; margin-top:2px;">Color Primario Tipográfico</div>
+        </div>
+        <div class="sw-code">
+          HEX: #1E1714<br/>
+          RGB: 30, 23, 20<br/>
+          CMYK: 60 / 65 / 65 / 80<br/>
+          Pantone: Black 4 C
+        </div>
+      </div>
+
+      <div class="swatch" style="background:#F7EFE1; color:#1E1714;">
+        <div>
+          <div class="sw-name">Crema Masa</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Color Secundario / Fondo</div>
+        </div>
+        <div class="sw-code" style="color:#1E1714;">
+          HEX: #F7EFE1<br/>
+          RGB: 247, 239, 225<br/>
+          CMYK: 2 / 5 / 12 / 0<br/>
+          Harina & Masa Madre
+        </div>
+      </div>
+
+      <div class="swatch" style="background:#FFFFFF; color:#1E1714; border-left:1px solid var(--line);">
+        <div>
+          <div class="sw-name">Blanco Puro</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Contraste / Packaging</div>
+        </div>
+        <div class="sw-code" style="color:#1E1714;">
+          HEX: #FFFFFF<br/>
+          RGB: 255, 255, 255<br/>
+          CMYK: 0 / 0 / 0 / 0<br/>
+          Limpio & Neutro
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 · REDES SOCIALES, 09 · STICKERS & 10 · PACKAGING -->
+  <section>
+    <div class="section-tag">08 · Redes Sociales · 09 · Stickers · 10 · Packaging</div>
+    <div class="grid grid-3">
+      <!-- 08 Redes Sociales -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">08. Aplicación en Redes Sociales</div>
+            <div class="card-sub">Avatar circular y grilla de contenido</div>
+          </div>
+        </div>
+        <div class="stage stage-cream" style="min-height:460px;">
+          <div class="ig-card">
+            <div class="ig-header">
+              <div class="ig-avatar">
+                <img src="avatar-red.svg" alt="Avatar IG" />
+              </div>
+              <div class="ig-info">
+                <div class="ig-handle">@donborde.ar</div>
+                <div class="ig-desc">Pizzetas & Prepizzas Artesanales<br/>Masa madre · Horno a piedra</div>
+              </div>
+            </div>
+            <div class="ig-grid">
+              <div class="ig-tile" style="background:var(--red);">
+                <img src="symbol-white.svg" style="width:50%;" />
+              </div>
+              <div class="ig-tile" style="background:var(--coal);">
+                <img src="wordmark-negative.svg" style="width:72%;" />
+              </div>
+              <div class="ig-tile" style="background:var(--cream);">
+                <img src="symbol-color.svg" style="width:50%;" />
+              </div>
+              <div class="ig-tile" style="background:var(--cream);">
+                <img src="seal-red.svg" style="width:75%;" />
+              </div>
+              <div class="ig-tile" style="background:var(--red);">
+                <img src="horizontal-white.svg" style="width:78%;" />
+              </div>
+              <div class="ig-tile" style="background:var(--coal);">
+                <img src="symbol-color.svg" style="width:50%;" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 09 Stickers & Sellos -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">09. Stickers & Sellos Circulares</div>
+            <div class="card-sub">Para sellado de paquetes y bolsas</div>
+          </div>
+        </div>
+        <div class="stage stage-dark" style="min-height:460px;">
+          <div class="sticker-cluster">
+            <div class="sticker-diecut large">
+              <img src="seal-red.svg" alt="Sticker circular grande" />
+            </div>
+            <div style="display:flex; gap:16px;">
+              <div class="sticker-diecut small">
+                <img src="avatar-cream.svg" alt="Sticker crema" />
+              </div>
+              <div class="sticker-diecut small" style="transform:rotate(-8deg);">
+                <img src="seal-cream.svg" alt="Sello crema" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10 Packaging: Caja de Pizza / Prepizza -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">10. Packaging: Caja Kraft Prepizzas</div>
+            <div class="card-sub">Cartón reciclado + serigrafía en Rojo Tomate y Carbón</div>
+          </div>
+        </div>
+        <div class="stage" style="min-height:460px; background:#ECE4D7;">
+          <div class="pizza-box-mockup">
+            <img class="crust-accent" src="symbol-coal.svg" alt="" />
+            <img class="box-logo" src="horizontal-color.svg" alt="Logo en caja" />
+            <div class="red-band">
+              <div class="band-product">
+                Pizzetas × 10
+                <small>LISTAS PARA HORNEAR · MASA MADRE</small>
+              </div>
+              <img class="band-seal" src="seal-cream.svg" alt="Sello en franja" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PACKAGING ADICIONAL: BOLSA DE PAPEL MADERA & DELANTAL -->
+  <section>
+    <div class="section-tag">Aplicaciones Físicas Adicionales</div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Bolsa Delivery en Papel Madera</div>
+            <div class="card-sub">Impresión a 1 tinta (Negro carbón) con máxima sobriedad y costo eficiente</div>
+          </div>
+        </div>
+        <div class="stage" style="background:#FAF6EF; min-height:440px;">
+          <div class="kraft-bag">
+            <img class="bag-logo" src="vertical-coal.svg" alt="Don Borde en bolsa" />
+            <div class="bag-tagline">PIZZETAS · PREPIZZAS · MASA MADRE</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Uniforme & Delantal de Cuadra</div>
+            <div class="card-sub">Bordado del símbolo sobre gabardina carbón oscuro</div>
+          </div>
+        </div>
+        <div class="stage stage-dark" style="min-height:440px;">
+          <svg viewBox="0 0 320 320" width="340" style="max-width:100%;">
+            <!-- Silueta estilizada de delantal de tela -->
+            <path d="M90 50 L140 25 Q160 35 180 25 L230 50 L270 120 L230 140 L230 290 L90 290 L90 140 L50 120 Z" fill="#2A211D" stroke="#1E1714" stroke-width="2"/>
+            <path d="M125 35 Q160 55 195 35" fill="none" stroke="#3D302A" stroke-width="4"/>
+            <!-- Bolsillo central con costuras -->
+            <path d="M110 180 L210 180 L205 260 L115 260 Z" fill="#241B18" stroke="#3D302A" stroke-dasharray="3 3"/>
+            <!-- Bordado del símbolo Don Borde sobre el pecho -->
+            <image href="symbol-color.svg" x="140" y="80" width="40" height="40"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHECKLIST DE CRITERIOS -->
+  <section>
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Evaluación de Criterios de Diseño (Checklist Profesional)</div>
+          <div class="card-sub">Verificación exhaustiva según los 15 principios del brief</div>
+        </div>
+      </div>
+      <div class="checklist-grid">
+        <div class="check-item"><span class="check-badge">✓</span> ¿Se reconoce rápidamente? (Silueta circular potente)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿Se recuerda en segundos? (El borde con la D)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿Tiene característica propia? (Concepto borde + D)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿Funciona en blanco y negro? (100% monocromático)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿Funciona a tamaño pequeño? (Legible a 16px y 24px)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿El nombre se lee al instante? (Kerning calibrado)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿Puede ser marca masiva? (Diseño atemporal de consumo)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿Funciona en una bolsa? (Bolsa kraft a 1 tinta)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿Funciona como foto de perfil? (Avatar optimizado)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿Funciona como sticker? (Sello circular concéntrico)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿Fácil de reproducir? (Vector puro sin gradientes ni 3D)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿Se siente profesional? (Geometría exacta, no amateur)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿Tiene personalidad argentina? (Cálido y artesanal)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿Evita clichés de pizzería? (Cero chefs, bigotes ni llamas)</div>
+        <div class="check-item"><span class="check-badge">✓</span> ¿Concepto "Borde" integrado? (Es la forma principal)</div>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>
