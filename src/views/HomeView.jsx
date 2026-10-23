@@ -65,7 +65,7 @@ export default function HomeView() {
                   margin: '0 0 2rem 0'
                 }}
               >
-                Elaboración artesanal en casa con masa crocante, salsa casera y abundante muzzarella. Listas para disfrutar en familia o abastecer tu almacén, bar o negocio en San Juan.
+                Elaboración artesanal en casa con masa crocante, salsa de tomate y abundante queso cremoso fundido. Listas para disfrutar en familia o abastecer tu almacén, bar o negocio en San Juan.
               </p>
 
               {/* Botón de Acción Principal */}
@@ -139,7 +139,7 @@ export default function HomeView() {
                     100%
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--color-carbon-muted)', marginTop: '2px' }}>
-                    Muzzarella de primera
+                    Queso cremoso fundido
                   </div>
                 </div>
 
@@ -213,7 +213,7 @@ export default function HomeView() {
                 </div>
                 <div>
                   <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-carbon)' }}>
-                    Piso crocante & salsa casera
+                    Piso crocante & queso fundido
                   </div>
                   <div style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)' }}>
                     Receta original Di Borde · San Juan
@@ -252,7 +252,7 @@ export default function HomeView() {
                   Nuestros Productos
                 </h2>
                 <p style={{ fontSize: '0.92rem', color: 'var(--color-carbon-muted)', margin: '6px 0 0 0', maxWidth: '580px' }}>
-                  Elaboradas con harina de primera, salsa casera y muzzarella. Descuento automático por cantidad directo en el carrito.
+                  Elaboradas con harina de primera, salsa de tomate seleccionada y queso cremoso. Descuento automático por cantidad directo en el carrito.
                 </p>
               </div>
 
@@ -467,10 +467,10 @@ export default function HomeView() {
                 <Flame size={20} strokeWidth={1.5} />
               </div>
               <h3 className="font-serif" style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-carbon)', margin: '0 0 4px 0' }}>
-                Salsa y Muzzarella
+                Salsa y Queso Cremoso
               </h3>
               <p style={{ fontSize: '0.82rem', color: 'var(--color-carbon-muted)', margin: 0, lineHeight: 1.5 }}>
-                Salsa de tomate casera condimentada y abundante muzzarella de primera calidad que gratina perfecto.
+                Salsa de tomate seleccionada y abundante queso cremoso que gratina y funde a la perfección.
               </p>
             </div>
 

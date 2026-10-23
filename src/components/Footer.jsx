@@ -31,7 +31,7 @@ export default function Footer({ setCurrentRoute }) {
         />
 
         <p style={{ fontSize: '0.88rem', color: 'var(--color-carbon-muted)', lineHeight: 1.6, maxWidth: '500px', margin: '0 auto 1.5rem auto' }}>
-          Elaboración casera de pre-pizzas y pizzetas en Chimbas, San Juan. Salsa casera, masa crocante y la mejor muzzarella.
+          Elaboración casera de pre-pizzas y pizzetas en Chimbas, San Juan. Masa crocante, salsa de tomate y queso cremoso fundido.
         </p>
 
         {/* Quick Links (No portal link) */}
@@ -95,8 +95,19 @@ export default function Footer({ setCurrentRoute }) {
           </div>
         </div>
 
-        <div style={{ fontSize: '0.74rem', color: 'var(--color-carbon-subtle)', paddingTop: '1.25rem', borderTop: '1px solid var(--color-border)' }}>
-          © {new Date().getFullYear()} Di Borde Alimentos Artesanales. Todos los derechos reservados.
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.74rem', color: 'var(--color-carbon-subtle)', paddingTop: '1.25rem', borderTop: '1px solid var(--color-border)', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div>© {new Date().getFullYear()} Di Borde Alimentos Artesanales. Chimbas, San Juan.</div>
+          <a
+            href="#/admin"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/admin');
+            }}
+            style={{ color: 'var(--color-carbon-subtle)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', opacity: 0.7 }}
+            title="Panel de Gestión Exclusivo para Administración"
+          >
+            <span>Gestión Admin</span>
+          </a>
         </div>
       </div>
     </footer>

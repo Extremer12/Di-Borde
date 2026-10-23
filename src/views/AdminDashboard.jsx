@@ -1,21 +1,25 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { DI_BORDE_WHATSAPP_PHONE } from '../context/CartContext.jsx';
 import {
   Package,
-  AlertTriangle,
   CheckCircle2,
-  Users,
-  DollarSign,
-  TrendingUp,
-  Truck,
-  MessageCircle,
+  AlertTriangle,
+  Clock,
+  ArrowRight,
+  Plus,
+  Trash2,
   LogOut,
-  X,
-  Edit2,
-  MapPin,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Users,
+  MessageSquare,
+  ShoppingBag,
+  Truck,
   Phone,
-  Flame
+  FileText,
+  X,
+  ExternalLink
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -23,74 +27,222 @@ export default function AdminDashboard() {
     currentUser,
     opsState,
     logout,
+    addRawMaterial,
+    deleteRawMaterial,
+    addRawMaterialPurchase,
+    updateRawMaterialStock,
+    addCashflowTransaction,
+    deleteCashflowTransaction,
+    addReseller,
+    deleteReseller,
     assignMercaderia,
     registerPayment,
     updateResellerDebt,
-    addProductionStock,
+    addResellerNote,
+    toggleResellerNoteStatus,
     createOrder,
-    updateOrderStatus
+    updateOrderStatus,
+    addProductionStock
   } = useAuth();
 
-  const [activeTab, setActiveTab] = useState('resellers'); // 'resellers' | 'assign' | 'orders' | 'stock'
+  const [activeTab, setActiveTab] = useState('caja'); // 'caja' | 'insumos' | 'vendedores' | 'sugerencias' | 'pedidos'
 
   // Modales
-  const [paymentModal, setPaymentModal] = useState(null); // { resellerId, name, pending }
-  const [paymentAmount, setPaymentAmount] = useState('');
+  const [isCashflowModalOpen, setIsCashflowModalOpen] = useState(false);
+  const [cashflowType, setCashflowType] = useState('ingreso');
+  const [cashflowCategory, setCashflowCategory] = useState('Venta Directa');
+  const [cashflowConcept, setCashflowConcept] = useState('');
+  const [cashflowAmount, setCashflowAmount] = useState('');
 
-  const [debtModal, setDebtModal] = useState(null); // { resellerId, name, currentDebt, currentReason }
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [purchaseMaterialId, setPurchaseMaterialId] = useState(opsState.rawMaterials[0]?.id || '');
+  const [purchaseQuantity, setPurchaseQuantity] = useState('');
+  const [purchaseUnitPrice, setPurchaseUnitPrice] = useState('');
+  const [purchaseSupplier, setPurchaseSupplier] = useState('');
+  const [purchaseNotes, setPurchaseNotes] = useState('');
+
+  const [isNewMaterialModalOpen, setIsNewMaterialModalOpen] = useState(false);
+  const [newMatName, setNewMatName] = useState('');
+  const [newMatCategory, setNewMatCategory] = useState('Insumo Principal');
+  const [newMatUnit, setNewMatUnit] = useState('kg');
+  const [newMatStock, setNewMatStock] = useState('');
+  const [newMatMinAlert, setNewMatMinAlert] = useState('5');
+  const [newMatPrice, setNewMatPrice] = useState('');
+  const [newMatSupplier, setNewMatSupplier] = useState('');
+
+  const [isNewResellerModalOpen, setIsNewResellerModalOpen] = useState(false);
+  const [newResellerName, setNewResellerName] = useState('');
+  const [newResellerPhone, setNewResellerPhone] = useState('');
+  const [newResellerZone, setNewResellerZone] = useState('');
+
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [noteResellerId, setNoteResellerId] = useState(opsState.resellers[0]?.id || '');
+  const [noteType, setNoteType] = useState('venta');
+  const [noteContent, setNoteContent] = useState('');
+
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [orderCustomer, setOrderCustomer] = useState('');
+  const [orderPhone, setOrderPhone] = useState('');
+  const [orderAddress, setOrderAddress] = useState('');
+  const [orderItems, setOrderItems] = useState('3x Paquete x10 Pre-pizzetas ($7.000)');
+  const [orderTotal, setOrderTotal] = useState('7000');
+  const [orderDeliveryType, setOrderDeliveryType] = useState('delivery');
+
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [assignTargetReseller, setAssignTargetReseller] = useState(opsState.resellers[0]?.id || '');
+  const [assignPizzetas, setAssignPizzetas] = useState(15);
+  const [assignPaquetes10, setAssignPaquetes10] = useState(4);
+  const [assignPaquetesGrandes, setAssignPaquetesGrandes] = useState(2);
+  const [assignNote, setAssignNote] = useState('Turno Tarde');
+
+  const [paymentModal, setPaymentModal] = useState(null); // { resellerId, name, pending }
+  const [paymentInputAmount, setPaymentInputAmount] = useState('');
+
+  const [debtModal, setDebtModal] = useState(null); // { resellerId, name, currentDebt }
   const [debtInputAmount, setDebtInputAmount] = useState('');
   const [debtInputReason, setDebtInputReason] = useState('');
 
-  // Formulario Asignación
-  const [assignTargetReseller, setAssignTargetReseller] = useState(opsState.resellers[0]?.id || '');
-  const [assignPizzetas, setAssignPizzetas] = useState(10);
-  const [assignPaquetes10, setAssignPaquetes10] = useState(4);
-  const [assignPaquetesGrandes, setAssignPaquetesGrandes] = useState(2);
-  const [assignNote, setAssignNote] = useState('Lote Mañana');
+  const [adjustMaterialModal, setAdjustMaterialModal] = useState(null); // { id, name, currentStock, unit }
+  const [adjustStockVal, setAdjustStockVal] = useState('');
 
-  // Formulario Nuevo Pedido
-  const [newOrderCustomer, setNewOrderCustomer] = useState('');
-  const [newOrderPhone, setNewOrderPhone] = useState('');
-  const [newOrderAddress, setNewOrderAddress] = useState('');
-  const [newOrderItems, setNewOrderItems] = useState('3x Paquete x10 Pre-pizzetas');
-  const [newOrderTotal, setNewOrderTotal] = useState('7000');
-  const [newOrderType, setNewOrderType] = useState('delivery');
+  // --------------------------------------------------------------------------
+  // CÁLCULOS KPI GENERALES
+  // --------------------------------------------------------------------------
+  const totalIngresos = opsState.cashflow
+    .filter((tx) => tx.type === 'ingreso')
+    .reduce((sum, tx) => sum + tx.amount, 0);
 
-  // Cálculos métricas
-  const totalStock = opsState.stock['pizzeta-con-queso'] + opsState.stock['paquete-10-prepizzetas'] + opsState.stock['paquete-2-prepizzas-grandes'];
-  const totalDebtAcrossResellers = opsState.resellers.reduce((sum, r) => sum + (r.debtAmount || 0), 0);
+  const totalEgresos = opsState.cashflow
+    .filter((tx) => tx.type === 'egreso')
+    .reduce((sum, tx) => sum + tx.amount, 0);
 
-  const totalStreetRenditionPending = opsState.resellers.reduce((sum, r) => {
-    if (!r.activeAssignment) return sum;
-    const pending = Math.max(0, r.activeAssignment.totalRendicion - (r.activeAssignment.rendicionPagada || 0));
-    return sum + pending;
+  const balanceNetoCaja = totalIngresos - totalEgresos;
+
+  const totalDeudaCalle = opsState.resellers.reduce((sum, r) => sum + (r.debtAmount || 0), 0);
+
+  const pendingStreetRendition = opsState.resellers.reduce((sum, r) => {
+    if (!r.assigned) return sum;
+    const diff = Math.max(0, r.assigned.totalRendicion - (r.assigned.rendicionCobrada || 0));
+    return sum + diff;
   }, 0);
 
-  const totalCollectedToday = opsState.resellers.reduce((sum, r) => {
-    return sum + (r.activeAssignment?.rendicionPagada || 0);
-  }, 0);
+  const lowStockMaterials = opsState.rawMaterials.filter(
+    (m) => m.currentStock <= m.minStockAlert
+  );
+
+  const pendingOrdersCount = opsState.orders.filter(
+    (o) => o.status === 'pendiente' || o.status === 'en_elaboracion' || o.status === 'en_reparto'
+  ).length;
+
+  // --------------------------------------------------------------------------
+  // HANDLERS
+  // --------------------------------------------------------------------------
+  const handleCreateCashflow = (e) => {
+    e.preventDefault();
+    addCashflowTransaction({
+      type: cashflowType,
+      category: cashflowCategory,
+      concept: cashflowConcept,
+      amount: cashflowAmount
+    });
+    setCashflowConcept('');
+    setCashflowAmount('');
+    setIsCashflowModalOpen(false);
+  };
+
+  const handleCreatePurchase = (e) => {
+    e.preventDefault();
+    addRawMaterialPurchase({
+      materialId: purchaseMaterialId,
+      quantity: purchaseQuantity,
+      unitPrice: purchaseUnitPrice,
+      supplier: purchaseSupplier,
+      notes: purchaseNotes
+    });
+    setPurchaseQuantity('');
+    setPurchaseUnitPrice('');
+    setPurchaseSupplier('');
+    setPurchaseNotes('');
+    setIsPurchaseModalOpen(false);
+  };
+
+  const handleCreateNewMaterial = (e) => {
+    e.preventDefault();
+    addRawMaterial({
+      name: newMatName,
+      category: newMatCategory,
+      unit: newMatUnit,
+      currentStock: newMatStock,
+      minStockAlert: newMatMinAlert,
+      lastPurchasePrice: newMatPrice,
+      supplier: newMatSupplier
+    });
+    setNewMatName('');
+    setNewMatStock('');
+    setNewMatPrice('');
+    setNewMatSupplier('');
+    setIsNewMaterialModalOpen(false);
+  };
+
+  const handleCreateNewReseller = (e) => {
+    e.preventDefault();
+    addReseller({
+      name: newResellerName,
+      phone: newResellerPhone,
+      zone: newResellerZone
+    });
+    setNewResellerName('');
+    setNewResellerPhone('');
+    setNewResellerZone('');
+    setIsNewResellerModalOpen(false);
+  };
+
+  const handleCreateNote = (e) => {
+    e.preventDefault();
+    const target = opsState.resellers.find((r) => r.id === noteResellerId);
+    addResellerNote({
+      resellerId: noteResellerId,
+      resellerName: target ? target.name : 'Vendedor',
+      type: noteType,
+      content: noteContent
+    });
+    setNoteContent('');
+    setIsNoteModalOpen(false);
+  };
+
+  const handleCreateOrder = (e) => {
+    e.preventDefault();
+    createOrder({
+      customerName: orderCustomer,
+      phone: orderPhone,
+      address: orderAddress,
+      itemsSummary: orderItems,
+      total: parseInt(orderTotal) || 0,
+      deliveryType: orderDeliveryType
+    });
+    setOrderCustomer('');
+    setOrderPhone('');
+    setOrderAddress('');
+    setIsOrderModalOpen(false);
+  };
 
   const handleConfirmAssignment = (e) => {
     e.preventDefault();
-    if (!assignTargetReseller) return;
-
     assignMercaderia(assignTargetReseller, {
       pizzetasQueso: assignPizzetas,
       paquetes10: assignPaquetes10,
       paquetesGrandes: assignPaquetesGrandes,
       note: assignNote
     });
-
-    alert('Mercadería asignada con éxito. Stock descontado del obrador.');
-    setActiveTab('resellers');
+    setIsAssignModalOpen(false);
   };
 
   const handleConfirmPayment = (e) => {
     e.preventDefault();
     if (!paymentModal) return;
-    registerPayment(paymentModal.resellerId, paymentAmount);
+    registerPayment(paymentModal.resellerId, paymentInputAmount);
     setPaymentModal(null);
-    setPaymentAmount('');
+    setPaymentInputAmount('');
   };
 
   const handleConfirmDebt = (e) => {
@@ -98,1008 +250,1458 @@ export default function AdminDashboard() {
     if (!debtModal) return;
     updateResellerDebt(debtModal.resellerId, debtInputAmount, debtInputReason);
     setDebtModal(null);
+    setDebtInputAmount('');
+    setDebtInputReason('');
   };
 
-  const handleCreateOrderSubmit = (e) => {
+  const handleConfirmStockAdjust = (e) => {
     e.preventDefault();
-    if (!newOrderCustomer) return;
-
-    createOrder({
-      customerName: newOrderCustomer,
-      phone: newOrderPhone,
-      address: newOrderAddress,
-      itemsSummary: newOrderItems,
-      total: parseInt(newOrderTotal) || 0,
-      deliveryType: newOrderType
-    });
-
-    setNewOrderCustomer('');
-    setNewOrderPhone('');
-    setNewOrderAddress('');
-    alert('Pedido registrado en el sistema.');
-  };
-
-  const handleSendReminderWhatsApp = (reseller) => {
-    let text = `Hola ${reseller.name}, te escribo de Di Borde.\n`;
-    if (reseller.debtAmount > 0) {
-      text += `Te recordamos que tenés un saldo pendiente registrado de *$${reseller.debtAmount.toLocaleString('es-AR')}* (${reseller.debtReason || 'mercadería'}).\n`;
-    }
-    if (reseller.activeAssignment) {
-      const pending = reseller.activeAssignment.totalRendicion - (reseller.activeAssignment.rendicionPagada || 0);
-      if (pending > 0) {
-        text += `Además tenés la rendición de hoy por *$${pending.toLocaleString('es-AR')}*.\n`;
-      }
-    }
-    text += `Por favor confirmanos horario para regularizar en el obrador. Gracias.`;
-
-    const encoded = encodeURIComponent(text);
-    window.open(`https://wa.me/549${reseller.phone}?text=${encoded}`, '_blank');
+    if (!adjustMaterialModal) return;
+    updateRawMaterialStock(adjustMaterialModal.id, adjustStockVal);
+    setAdjustMaterialModal(null);
   };
 
   return (
-    <div style={{ backgroundColor: 'var(--color-cream)', minHeight: '100vh', padding: '2.5rem 1rem 6rem 1rem' }}>
-      <div className="container" style={{ maxWidth: 'var(--max-width)' }}>
-
-        {/* ======================================================== */}
-        {/* HEADER ADMIN (Corrección de contraste urgente)           */}
-        {/* ======================================================== */}
-        <div
-          style={{
-            backgroundColor: 'var(--color-carbon)',
-            borderRadius: '10px',
-            padding: '1.75rem 2rem',
-            marginBottom: '2rem',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '1.25rem'
-          }}
-        >
-          <div>
-            <span
-              style={{
-                display: 'inline-block',
-                fontSize: '0.68rem',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.14em',
-                color: '#E2725B',
-                marginBottom: '4px'
-              }}
-            >
-              PANEL DE GESTIÓN Y OPERACIONES
-            </span>
-            <h1
-              className="font-serif"
-              style={{
-                fontSize: '1.75rem',
-                fontWeight: 600,
-                color: '#FAF8F5',
-                margin: '0 0 4px 0',
-                lineHeight: 1.2
-              }}
-            >
-              Administración Di Borde
-            </h1>
-            <p style={{ fontSize: '0.84rem', color: '#A8A29E', margin: 0 }}>
-              Obrador Artesanal · Stock en tiempo real, asignación de lotes y control de cobros.
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '0.84rem', fontWeight: 600, color: '#FAF8F5' }}>
-                Julián
-              </div>
-              <div style={{ fontSize: '0.72rem', color: '#A8A29E' }}>
-                Administrador General
+    <div style={{ backgroundColor: 'var(--color-cream)', minHeight: '100vh', paddingBottom: '6rem' }}>
+      
+      {/* ======================================================== */}
+      {/* 1. HEADER ADMINISTRATIVO OSCURO DE ALTO CONTRASTE        */}
+      {/* ======================================================== */}
+      <header
+        style={{
+          backgroundColor: 'var(--color-carbon)',
+          color: '#FAF8F5',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          padding: '1.25rem 0'
+        }}
+      >
+        <div className="container" style={{ maxWidth: 'var(--container-max, 1140px)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <img
+                src="/assets/images/Emblema Rojo Circular con D.png"
+                alt="Di Borde"
+                style={{ width: '36px', height: '36px', borderRadius: '50%' }}
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+              <div>
+                <span style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.14em', color: '#E2725B', fontWeight: 700 }}>
+                  DI BORDE · CONTROL CENTRAL
+                </span>
+                <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.45rem', fontWeight: 600, color: '#FAF8F5', margin: 0 }}>
+                  Gestión Operativa del Negocio
+                </h1>
               </div>
             </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <a
+                href="#/"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  color: '#FAF8F5',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  border: '1px solid rgba(255, 255, 255, 0.12)'
+                }}
+              >
+                <span>Ver Tienda Pública</span>
+                <ExternalLink size={13} strokeWidth={1.5} />
+              </a>
+
+              <button
+                type="button"
+                onClick={logout}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: '6px',
+                  backgroundColor: 'transparent',
+                  color: '#FAF8F5',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  cursor: 'pointer'
+                }}
+              >
+                <LogOut size={13} strokeWidth={1.5} />
+                <span>Salir</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* ======================================================== */}
+      {/* 2. BARRA DE MÉTRICAS CLAVE (KPIs HORIZONTALES)           */}
+      {/* ======================================================== */}
+      <section style={{ padding: '1.75rem 0', borderBottom: '1px solid var(--color-border)', backgroundColor: '#FFFFFF' }}>
+        <div className="container" style={{ maxWidth: 'var(--container-max, 1140px)' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '1rem'
+            }}
+          >
+            {/* KPI 1: Balance Caja */}
+            <div style={{ padding: '1rem', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-cream-light)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-carbon-muted)', fontWeight: 600 }}>
+                  Balance Neto en Caja
+                </span>
+                <DollarSign size={15} strokeWidth={1.5} color="var(--color-success)" />
+              </div>
+              <div className="tabular-nums" style={{ fontSize: '1.5rem', fontWeight: 700, color: balanceNetoCaja >= 0 ? 'var(--color-success)' : '#DC2626' }}>
+                ${balanceNetoCaja.toLocaleString('es-AR')}
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--color-carbon-subtle)', marginTop: '2px' }}>
+                Ingresos: ${totalIngresos.toLocaleString('es-AR')} · Egresos: ${totalEgresos.toLocaleString('es-AR')}
+              </div>
+            </div>
+
+            {/* KPI 2: Rendición Pendiente de Vendedores */}
+            <div style={{ padding: '1rem', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-cream-light)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-carbon-muted)', fontWeight: 600 }}>
+                  Rendición en Calle
+                </span>
+                <Users size={15} strokeWidth={1.5} color="var(--color-primary)" />
+              </div>
+              <div className="tabular-nums" style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-carbon)' }}>
+                ${pendingStreetRendition.toLocaleString('es-AR')}
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--color-carbon-subtle)', marginTop: '2px' }}>
+                Por cobrar hoy de los vendedores
+              </div>
+            </div>
+
+            {/* KPI 3: Deuda Total en Calle */}
+            <div style={{ padding: '1rem', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-cream-light)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-carbon-muted)', fontWeight: 600 }}>
+                  Deuda Acumulada
+                </span>
+                {totalDeudaCalle > 0 && <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#DC2626' }} title="Hay saldos deudores" />}
+              </div>
+              <div className="tabular-nums" style={{ fontSize: '1.5rem', fontWeight: 700, color: totalDeudaCalle > 0 ? '#DC2626' : 'var(--color-carbon)' }}>
+                ${totalDeudaCalle.toLocaleString('es-AR')}
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--color-carbon-subtle)', marginTop: '2px' }}>
+                Mercadería o saldo pendiente de rendir
+              </div>
+            </div>
+
+            {/* KPI 4: Insumos / Alertas */}
+            <div style={{ padding: '1rem', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-cream-light)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-carbon-muted)', fontWeight: 600 }}>
+                  Alertas Insumos / Pedidos
+                </span>
+                <AlertTriangle size={15} strokeWidth={1.5} color={lowStockMaterials.length > 0 ? '#D97706' : 'var(--color-carbon-subtle)'} />
+              </div>
+              <div className="tabular-nums" style={{ fontSize: '1.5rem', fontWeight: 700, color: lowStockMaterials.length > 0 ? '#D97706' : 'var(--color-carbon)' }}>
+                {lowStockMaterials.length} alertas
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--color-carbon-subtle)', marginTop: '2px' }}>
+                {pendingOrdersCount} pedidos en proceso activo
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ======================================================== */}
+      {/* 3. PESTAÑAS DE NAVEGACIÓN ESTILO LINEAR                  */}
+      {/* ======================================================== */}
+      <div style={{ borderBottom: '1px solid var(--color-border)', backgroundColor: '#FFFFFF', position: 'sticky', top: 0, zIndex: 10 }}>
+        <div className="container" style={{ maxWidth: 'var(--container-max, 1140px)' }}>
+          <div style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
+            
+            <button
+              type="button"
+              onClick={() => setActiveTab('caja')}
+              style={{
+                padding: '0.9rem 0.2rem',
+                fontSize: '0.86rem',
+                fontWeight: activeTab === 'caja' ? 600 : 500,
+                color: activeTab === 'caja' ? 'var(--color-carbon)' : 'var(--color-carbon-muted)',
+                border: 'none',
+                borderBottom: activeTab === 'caja' ? '2px solid var(--color-carbon)' : '2px solid transparent',
+                cursor: 'pointer',
+                background: 'none',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Caja & Finanzas (Ingresos / Egresos)
+            </button>
 
             <button
               type="button"
-              onClick={logout}
+              onClick={() => setActiveTab('insumos')}
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                color: '#FAF8F5',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                borderRadius: '6px',
-                padding: '7px 12px',
-                fontSize: '0.78rem',
-                fontWeight: 500,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
+                padding: '0.9rem 0.2rem',
+                fontSize: '0.86rem',
+                fontWeight: activeTab === 'insumos' ? 600 : 500,
+                color: activeTab === 'insumos' ? 'var(--color-carbon)' : 'var(--color-carbon-muted)',
+                border: 'none',
+                borderBottom: activeTab === 'insumos' ? '2px solid var(--color-carbon)' : '2px solid transparent',
                 cursor: 'pointer',
-                transition: 'all var(--transition-fast)'
+                background: 'none',
+                whiteSpace: 'nowrap'
               }}
             >
-              <LogOut size={13} strokeWidth={1.5} />
-              <span>Cerrar Sesión</span>
+              Insumos & Compras Recientes
             </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('vendedores')}
+              style={{
+                padding: '0.9rem 0.2rem',
+                fontSize: '0.86rem',
+                fontWeight: activeTab === 'vendedores' ? 600 : 500,
+                color: activeTab === 'vendedores' ? 'var(--color-carbon)' : 'var(--color-carbon-muted)',
+                border: 'none',
+                borderBottom: activeTab === 'vendedores' ? '2px solid var(--color-carbon)' : '2px solid transparent',
+                cursor: 'pointer',
+                background: 'none',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Vendedores & Rendiciones
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('sugerencias')}
+              style={{
+                padding: '0.9rem 0.2rem',
+                fontSize: '0.86rem',
+                fontWeight: activeTab === 'sugerencias' ? 600 : 500,
+                color: activeTab === 'sugerencias' ? 'var(--color-carbon)' : 'var(--color-carbon-muted)',
+                border: 'none',
+                borderBottom: activeTab === 'sugerencias' ? '2px solid var(--color-carbon)' : '2px solid transparent',
+                cursor: 'pointer',
+                background: 'none',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Reportes & Sugerencias ({opsState.resellerNotes.length})
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('pedidos')}
+              style={{
+                padding: '0.9rem 0.2rem',
+                fontSize: '0.86rem',
+                fontWeight: activeTab === 'pedidos' ? 600 : 500,
+                color: activeTab === 'pedidos' ? 'var(--color-carbon)' : 'var(--color-carbon-muted)',
+                border: 'none',
+                borderBottom: activeTab === 'pedidos' ? '2px solid var(--color-carbon)' : '2px solid transparent',
+                cursor: 'pointer',
+                background: 'none',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Pedidos & Ventas ({opsState.orders.length})
+            </button>
+
           </div>
         </div>
+      </div>
 
-        {/* ======================================================== */}
-        {/* MÉTRICAS TIPO DASHBOARD PROFESIONAL (Horizontal limpia) */}
-        {/* ======================================================== */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '1px',
-            backgroundColor: 'var(--color-border)',
-            border: '1px solid var(--color-border)',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            marginBottom: '2rem'
-          }}
-        >
-          {/* 1. Stock Obrador */}
-          <div style={{ backgroundColor: '#FFFFFF', padding: '1.25rem 1.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <span className="eyebrow-muted" style={{ margin: 0 }}>
-                Stock en Obrador
-              </span>
-              <Package size={15} strokeWidth={1.5} color="var(--color-carbon-muted)" />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-              <span className="tabular-nums font-serif" style={{ fontSize: '1.6rem', fontWeight: 600, color: 'var(--color-carbon)' }}>
-                {totalStock}
-              </span>
-              <span style={{ fontSize: '0.78rem', color: 'var(--color-carbon-subtle)' }}>unidades</span>
-            </div>
-            <div className="tabular-nums" style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)', marginTop: '4px' }}>
-              {opsState.stock['pizzeta-con-queso']} pizzetas · {opsState.stock['paquete-10-prepizzetas']} x10 · {opsState.stock['paquete-2-prepizzas-grandes']} x2
-            </div>
-          </div>
-
-          {/* 2. Deuda Total en Rojo (Punto rojo sutil, sin fondo rosa) */}
-          <div style={{ backgroundColor: '#FFFFFF', padding: '1.25rem 1.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#DC2626', display: 'inline-block' }} />
-                <span style={{ fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#DC2626' }}>
-                  Saldos en Rojo
-                </span>
+      {/* ======================================================== */}
+      {/* 4. CONTENIDO PRINCIPAL POR PESTAÑAS                      */}
+      {/* ======================================================== */}
+      <main className="container" style={{ maxWidth: 'var(--container-max, 1140px)', paddingTop: '2.5rem' }}>
+        
+        {/* ---------------------------------------------------- */}
+        {/* TAB 1: CAJA & FINANZAS                               */}
+        {/* ---------------------------------------------------- */}
+        {activeTab === 'caja' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <span className="eyebrow-kicker">Flujo de Fondos</span>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-carbon)', margin: 0 }}>
+                  Ingresos y Egresos de Di Borde
+                </h2>
               </div>
-              <AlertTriangle size={15} strokeWidth={1.5} color="#DC2626" />
+              <button
+                type="button"
+                onClick={() => setIsCashflowModalOpen(true)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: 'var(--color-carbon)',
+                  color: '#FAF8F5',
+                  padding: '0.6rem 1.15rem',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontSize: '0.86rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                <Plus size={15} strokeWidth={1.5} />
+                <span>Registrar Movimiento de Caja</span>
+              </button>
             </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-              <span className="tabular-nums font-serif" style={{ fontSize: '1.6rem', fontWeight: 600, color: '#DC2626' }}>
-                -${totalDebtAcrossResellers.toLocaleString('es-AR')}
-              </span>
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)', marginTop: '4px' }}>
-              {opsState.resellers.filter((r) => (r.debtAmount || 0) > 0).length} revendedores con saldo adeudado
+
+            {/* Listado de movimientos */}
+            <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid var(--color-border)', overflow: 'hidden' }}>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: 'var(--color-cream-light)', borderBottom: '1px solid var(--color-border)', color: 'var(--color-carbon-muted)' }}>
+                      <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Fecha</th>
+                      <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Tipo</th>
+                      <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Categoría</th>
+                      <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Concepto / Detalle</th>
+                      <th style={{ padding: '0.75rem 1rem', fontWeight: 600, textAlign: 'right' }}>Monto</th>
+                      <th style={{ padding: '0.75rem 1rem', textAlign: 'center', width: '60px' }}>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {opsState.cashflow.map((tx) => (
+                      <tr key={tx.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                        <td style={{ padding: '0.75rem 1rem', color: 'var(--color-carbon-muted)' }}>{tx.date}</td>
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '0.72rem',
+                              fontWeight: 600,
+                              textTransform: 'uppercase',
+                              backgroundColor: tx.type === 'ingreso' ? '#F0FDF4' : '#FEF2F2',
+                              color: tx.type === 'ingreso' ? '#15803D' : '#DC2626'
+                            }}
+                          >
+                            {tx.type}
+                          </span>
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', fontWeight: 500, color: 'var(--color-carbon)' }}>{tx.category}</td>
+                        <td style={{ padding: '0.75rem 1rem', color: 'var(--color-carbon)' }}>
+                          <div>{tx.concept}</div>
+                          {tx.reference && <div style={{ fontSize: '0.72rem', color: 'var(--color-carbon-subtle)' }}>Ref: {tx.reference}</div>}
+                        </td>
+                        <td className="tabular-nums" style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 600, fontSize: '0.92rem', color: tx.type === 'ingreso' ? '#15803D' : '#DC2626' }}>
+                          {tx.type === 'ingreso' ? '+' : '-'}${tx.amount.toLocaleString('es-AR')}
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={() => deleteCashflowTransaction(tx.id)}
+                            style={{ color: '#A8A29E', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+                            title="Eliminar movimiento"
+                          >
+                            <Trash2 size={13} strokeWidth={1.5} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
+        )}
 
-          {/* 3. En la calle por rendir */}
-          <div style={{ backgroundColor: '#FFFFFF', padding: '1.25rem 1.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <span className="eyebrow-muted" style={{ margin: 0 }}>
-                Por Rendir Hoy
-              </span>
-              <TrendingUp size={15} strokeWidth={1.5} color="var(--color-carbon-muted)" />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-              <span className="tabular-nums font-serif" style={{ fontSize: '1.6rem', fontWeight: 600, color: 'var(--color-carbon)' }}>
-                ${totalStreetRenditionPending.toLocaleString('es-AR')}
-              </span>
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)', marginTop: '4px' }}>
-              Lotes activos entregados hoy
-            </div>
-          </div>
-
-          {/* 4. Cobrado en caja */}
-          <div style={{ backgroundColor: '#FFFFFF', padding: '1.25rem 1.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <span className="eyebrow-muted" style={{ margin: 0, color: '#15803D' }}>
-                Cobrado en Caja Hoy
-              </span>
-              <CheckCircle2 size={15} strokeWidth={1.5} color="#15803D" />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-              <span className="tabular-nums font-serif" style={{ fontSize: '1.6rem', fontWeight: 600, color: '#15803D' }}>
-                +${totalCollectedToday.toLocaleString('es-AR')}
-              </span>
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)', marginTop: '4px' }}>
-              Rendiciones liquidadas en el día
-            </div>
-          </div>
-        </div>
-
-        {/* ======================================================== */}
-        {/* NAVEGACIÓN POR PESTAÑAS (Underline Tabs Minimalistas)    */}
-        {/* ======================================================== */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '1.75rem',
-            borderBottom: '1px solid var(--color-border)',
-            marginBottom: '2rem',
-            overflowX: 'auto',
-            scrollbarWidth: 'none'
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => setActiveTab('resellers')}
-            style={{
-              padding: '0.75rem 0.25rem',
-              backgroundColor: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === 'resellers' ? '2px solid var(--color-primary)' : '2px solid transparent',
-              color: activeTab === 'resellers' ? 'var(--color-carbon)' : 'var(--color-carbon-muted)',
-              fontSize: '0.86rem',
-              fontWeight: activeTab === 'resellers' ? 600 : 500,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              whiteSpace: 'nowrap',
-              transition: 'all var(--transition-fast)'
-            }}
-          >
-            <Users size={15} strokeWidth={1.5} />
-            <span>Revendedores & Deudas</span>
-            <span
-              className="tabular-nums"
-              style={{
-                fontSize: '0.72rem',
-                backgroundColor: 'var(--color-cream-surface)',
-                padding: '1px 6px',
-                borderRadius: '4px',
-                color: 'var(--color-carbon-muted)'
-              }}
-            >
-              {opsState.resellers.length}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('assign')}
-            style={{
-              padding: '0.75rem 0.25rem',
-              backgroundColor: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === 'assign' ? '2px solid var(--color-primary)' : '2px solid transparent',
-              color: activeTab === 'assign' ? 'var(--color-carbon)' : 'var(--color-carbon-muted)',
-              fontSize: '0.86rem',
-              fontWeight: activeTab === 'assign' ? 600 : 500,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              whiteSpace: 'nowrap',
-              transition: 'all var(--transition-fast)'
-            }}
-          >
-            <Package size={15} strokeWidth={1.5} />
-            <span>Asignar Mercadería</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('orders')}
-            style={{
-              padding: '0.75rem 0.25rem',
-              backgroundColor: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === 'orders' ? '2px solid var(--color-primary)' : '2px solid transparent',
-              color: activeTab === 'orders' ? 'var(--color-carbon)' : 'var(--color-carbon-muted)',
-              fontSize: '0.86rem',
-              fontWeight: activeTab === 'orders' ? 600 : 500,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              whiteSpace: 'nowrap',
-              transition: 'all var(--transition-fast)'
-            }}
-          >
-            <Truck size={15} strokeWidth={1.5} />
-            <span>Pedidos</span>
-            <span
-              className="tabular-nums"
-              style={{
-                fontSize: '0.72rem',
-                backgroundColor: 'var(--color-cream-surface)',
-                padding: '1px 6px',
-                borderRadius: '4px',
-                color: 'var(--color-carbon-muted)'
-              }}
-            >
-              {opsState.orders.length}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('stock')}
-            style={{
-              padding: '0.75rem 0.25rem',
-              backgroundColor: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === 'stock' ? '2px solid var(--color-primary)' : '2px solid transparent',
-              color: activeTab === 'stock' ? 'var(--color-carbon)' : 'var(--color-carbon-muted)',
-              fontSize: '0.86rem',
-              fontWeight: activeTab === 'stock' ? 600 : 500,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              whiteSpace: 'nowrap',
-              transition: 'all var(--transition-fast)'
-            }}
-          >
-            <Flame size={15} strokeWidth={1.5} />
-            <span>Stock Obrador</span>
-          </button>
-        </div>
-
-        {/* ======================================================== */}
-        {/* TAB 1: LISTA DE REVENDEDORES (Filas Limpias & Avatar LG) */}
-        {/* ======================================================== */}
-        {activeTab === 'resellers' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <span className="eyebrow-muted" style={{ margin: 0 }}>
-                Control de Revendedores y Saldos en Calle
-              </span>
-              <span className="tabular-nums" style={{ fontSize: '0.78rem', color: 'var(--color-carbon-muted)' }}>
-                {opsState.resellers.length} registrados
-              </span>
-            </div>
-
-            {opsState.resellers.map((r) => {
-              const hasDebt = (r.debtAmount || 0) > 0;
-              const assign = r.activeAssignment;
-              const pendingRendition = assign ? Math.max(0, assign.totalRendicion - (assign.rendicionPagada || 0)) : 0;
-              const initials = r.initials || r.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
-
-              return (
-                <div
-                  key={r.id}
+        {/* ---------------------------------------------------- */}
+        {/* TAB 2: INSUMOS & COMPRAS RECIENTES                   */}
+        {/* ---------------------------------------------------- */}
+        {activeTab === 'insumos' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <span className="eyebrow-kicker">Materias Primas & Costos</span>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-carbon)', margin: 0 }}>
+                  Stock de Insumos y Últimas Compras
+                </h2>
+              </div>
+              <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsNewMaterialModalOpen(true)}
                   style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
                     backgroundColor: '#FFFFFF',
+                    color: 'var(--color-carbon)',
+                    padding: '0.6rem 1rem',
+                    borderRadius: '6px',
                     border: '1px solid var(--color-border)',
-                    borderRadius: '8px',
-                    padding: '1.25rem 1.5rem',
-                    transition: 'border-color var(--transition-fast)'
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                    cursor: 'pointer'
                   }}
                 >
-                  {/* Fila Principal */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-                    
-                    {/* Identidad con Avatar de Iniciales (Sin emoji caritas) */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div
-                        style={{
-                          width: '42px',
-                          height: '42px',
-                          borderRadius: '50%',
-                          backgroundColor: 'var(--color-cream-surface)',
-                          border: '1px solid var(--color-border)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.85rem',
-                          fontWeight: 700,
-                          color: 'var(--color-carbon)',
-                          letterSpacing: '0.04em',
-                          flexShrink: 0
-                        }}
-                      >
-                        {initials}
-                      </div>
+                  <Plus size={14} strokeWidth={1.5} />
+                  <span>+ Nuevo Insumo para Elaborar</span>
+                </button>
 
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--color-carbon)', margin: 0 }}>
-                            {r.name}
+                <button
+                  type="button"
+                  onClick={() => setIsPurchaseModalOpen(true)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: 'var(--color-carbon)',
+                    color: '#FAF8F5',
+                    padding: '0.6rem 1.15rem',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '0.86rem',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Plus size={15} strokeWidth={1.5} />
+                  <span>Cargar Nueva Compra</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Grid de Insumos / Materias Primas */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
+              {opsState.rawMaterials.map((mat) => {
+                const isLow = mat.currentStock <= mat.minStockAlert;
+                return (
+                  <div
+                    key={mat.id}
+                    style={{
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: '8px',
+                      border: isLow ? '1px solid #F59E0B' : '1px solid var(--color-border)',
+                      padding: '1.25rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                        <div>
+                          <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', fontWeight: 600, color: 'var(--color-carbon)', margin: 0 }}>
+                            {mat.name}
                           </h3>
-                          <span style={{ fontSize: '0.72rem', color: 'var(--color-carbon-subtle)' }}>
-                            @{r.username}
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.78rem', color: 'var(--color-carbon-muted)', marginTop: '2px' }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            <MapPin size={12} strokeWidth={1.5} />
-                            {r.zone}
-                          </span>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            <Phone size={12} strokeWidth={1.5} />
-                            {r.phone}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Estado de Deuda / Al día (Punto indicador sutil) */}
-                    <div style={{ textAlign: 'right' }}>
-                      {hasDebt ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#DC2626' }} />
-                            <span style={{ fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#DC2626' }}>
-                              Saldo en rojo
-                            </span>
+                          <div style={{ fontSize: '0.76rem', color: 'var(--color-carbon-muted)', marginTop: '2px' }}>
+                            Proveedor: {mat.supplier || 'Proveedor regular'}
                           </div>
-                          <span className="tabular-nums font-serif" style={{ fontSize: '1.25rem', fontWeight: 600, color: '#DC2626', marginTop: '2px' }}>
-                            -${r.debtAmount.toLocaleString('es-AR')}
-                          </span>
                         </div>
-                      ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 8px', borderRadius: '4px', backgroundColor: 'var(--color-success-bg)' }}>
-                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#15803D' }} />
-                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#15803D' }}>
-                            Al día
+                        {isLow ? (
+                          <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#B45309', backgroundColor: '#FEF3C7', padding: '2px 6px', borderRadius: '4px' }}>
+                            Stock bajo
                           </span>
+                        ) : (
+                          <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#15803D', backgroundColor: '#F0FDF4', padding: '2px 6px', borderRadius: '4px' }}>
+                            Disponible
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Stock actual */}
+                      <div style={{ margin: '0.85rem 0', padding: '0.75rem', backgroundColor: 'var(--color-cream-light)', borderRadius: '6px', border: '1px solid var(--color-border)' }}>
+                        <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--color-carbon-muted)', letterSpacing: '0.04em' }}>
+                          Stock disponible en obrador:
                         </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Motivo de deuda integrado como nota administrativa discreta */}
-                  {hasDebt && (
-                    <div
-                      style={{
-                        marginTop: '0.85rem',
-                        backgroundColor: 'var(--color-cream)',
-                        border: '1px solid var(--color-border)',
-                        borderRadius: '6px',
-                        padding: '6px 12px',
-                        fontSize: '0.78rem',
-                        color: 'var(--color-carbon-muted)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '12px'
-                      }}
-                    >
-                      <div>
-                        <strong style={{ color: 'var(--color-carbon)', fontWeight: 600 }}>Nota administrativa:</strong>{' '}
-                        {r.debtReason}
-                      </div>
-                      {r.debtDate && (
-                        <span className="tabular-nums" style={{ fontSize: '0.72rem', color: 'var(--color-carbon-subtle)' }}>
-                          Registrado: {r.debtDate}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Detalle de Mercadería asignada */}
-                  {assign ? (
-                    <div
-                      style={{
-                        marginTop: '1rem',
-                        paddingTop: '0.85rem',
-                        borderTop: '1px solid var(--color-border)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        flexWrap: 'wrap',
-                        gap: '0.75rem',
-                        fontSize: '0.8rem'
-                      }}
-                    >
-                      <div className="tabular-nums" style={{ color: 'var(--color-carbon-muted)' }}>
-                        <span style={{ fontWeight: 600, color: 'var(--color-carbon)' }}>Lote activo ({assign.date}):</span>{' '}
-                        {assign.pizzetasQueso} pizzetas · {assign.paquetes10} paq x10 · {assign.paquetesGrandes} paq x2 · Total: ${assign.totalRendicion.toLocaleString('es-AR')}
+                        <div className="tabular-nums" style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--color-carbon)', marginTop: '2px' }}>
+                          {mat.currentStock} <span style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--color-carbon-muted)' }}>{mat.unit}</span>
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--color-carbon-subtle)', marginTop: '2px' }}>
+                          Alerta si baja de: {mat.minStockAlert} {mat.unit}
+                        </div>
                       </div>
 
-                      <div className="tabular-nums" style={{ fontWeight: 600, color: pendingRendition === 0 ? '#15803D' : 'var(--color-primary)' }}>
-                        {pendingRendition === 0 ? 'Rendición pagada completa' : `Pendiente a rendir: $${pendingRendition.toLocaleString('es-AR')}`}
+                      {/* Último precio de compra */}
+                      <div style={{ fontSize: '0.82rem', color: 'var(--color-carbon)' }}>
+                        <div>
+                          <strong>Último precio pagado:</strong>{' '}
+                          <span className="tabular-nums" style={{ fontWeight: 600, color: 'var(--color-primary)' }}>
+                            ${mat.lastPurchasePrice.toLocaleString('es-AR')}
+                          </span>{' '}
+                          / {mat.unit}
+                        </div>
+                        <div style={{ fontSize: '0.74rem', color: 'var(--color-carbon-muted)', marginTop: '2px' }}>
+                          Presentación: {mat.lastPurchasePack}
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--color-carbon-subtle)', marginTop: '2px' }}>
+                          Fecha de compra: {mat.lastPurchaseDate}
+                        </div>
                       </div>
                     </div>
-                  ) : (
-                    <div style={{ marginTop: '0.85rem', paddingTop: '0.65rem', borderTop: '1px solid var(--color-border)', fontSize: '0.78rem', color: 'var(--color-carbon-subtle)' }}>
-                      Sin mercadería asignada actualmente.
-                    </div>
-                  )}
 
-                  {/* Botones de Acción sobre el Revendedor */}
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '1rem' }}>
-                    {assign && pendingRendition > 0 && (
+                    <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <button
                         type="button"
                         onClick={() => {
-                          setPaymentModal({ resellerId: r.id, name: r.name, pending: pendingRendition });
-                          setPaymentAmount(pendingRendition);
+                          if (window.confirm(`¿Seguro que deseas eliminar el insumo "${mat.name}"?`)) {
+                            deleteRawMaterial(mat.id);
+                          }
+                        }}
+                        style={{ fontSize: '0.74rem', color: '#A8A29E', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', padding: '2px 4px' }}
+                        title="Eliminar insumo"
+                      >
+                        <Trash2 size={12} strokeWidth={1.5} />
+                        <span>Eliminar</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAdjustMaterialModal(mat);
+                          setAdjustStockVal(mat.currentStock);
+                        }}
+                        style={{ fontSize: '0.78rem', color: 'var(--color-carbon)', fontWeight: 500, background: 'none', border: '1px solid var(--color-border)', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}
+                      >
+                        Ajustar stock físico
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Stock de productos terminados listos */}
+            <div style={{ marginBottom: '2.5rem', backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid var(--color-border)', padding: '1.5rem' }}>
+              <span className="eyebrow-kicker">Producción Horneada Lista</span>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 600, color: 'var(--color-carbon)', margin: '0.2rem 0 1rem 0' }}>
+                Stock de Pizzetas y Pre-pizzas Terminadas
+              </h3>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                <div style={{ padding: '1rem', borderRadius: '6px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-cream-light)' }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--color-carbon)' }}>Pizzeta con Queso (50g)</div>
+                  <div className="tabular-nums" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-carbon)', marginTop: '4px' }}>
+                    {opsState.stock['pizzeta-con-queso']} <span style={{ fontSize: '0.8rem', fontWeight: 400 }}>unidades</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const add = prompt('¿Cuántas pizzetas horneadas sumás al stock?', '20');
+                      if (add) addProductionStock('pizzeta-con-queso', add);
+                    }}
+                    style={{ marginTop: '0.5rem', fontSize: '0.74rem', color: 'var(--color-primary)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    + Sumar tanda horneada
+                  </button>
+                </div>
+
+                <div style={{ padding: '1rem', borderRadius: '6px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-cream-light)' }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--color-carbon)' }}>Paquete x10 Pre-pizzetas</div>
+                  <div className="tabular-nums" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-carbon)', marginTop: '4px' }}>
+                    {opsState.stock['paquete-10-prepizzetas']} <span style={{ fontSize: '0.8rem', fontWeight: 400 }}>paquetes</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const add = prompt('¿Cuántos paquetes x10 sumás al stock?', '10');
+                      if (add) addProductionStock('paquete-10-prepizzetas', add);
+                    }}
+                    style={{ marginTop: '0.5rem', fontSize: '0.74rem', color: 'var(--color-primary)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    + Sumar paquetes embolsados
+                  </button>
+                </div>
+
+                <div style={{ padding: '1rem', borderRadius: '6px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-cream-light)' }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--color-carbon)' }}>Paquete x2 Grandes (400g c/u)</div>
+                  <div className="tabular-nums" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-carbon)', marginTop: '4px' }}>
+                    {opsState.stock['paquete-2-prepizzas-grandes']} <span style={{ fontSize: '0.8rem', fontWeight: 400 }}>paquetes</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const add = prompt('¿Cuántos paquetes x2 grandes sumás al stock?', '6');
+                      if (add) addProductionStock('paquete-2-prepizzas-grandes', add);
+                    }}
+                    style={{ marginTop: '0.5rem', fontSize: '0.74rem', color: 'var(--color-primary)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    + Sumar paquetes embolsados
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Historial de compras de insumos */}
+            <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid var(--color-border)', overflow: 'hidden' }}>
+              <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--color-border)', fontWeight: 600, fontSize: '0.92rem' }}>
+                Historial de Compras de Materias Primas
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
+                <thead>
+                  <tr style={{ backgroundColor: 'var(--color-cream-light)', borderBottom: '1px solid var(--color-border)', color: 'var(--color-carbon-muted)' }}>
+                    <th style={{ padding: '0.7rem 1rem' }}>Fecha</th>
+                    <th style={{ padding: '0.7rem 1rem' }}>Insumo</th>
+                    <th style={{ padding: '0.7rem 1rem' }}>Cantidad</th>
+                    <th style={{ padding: '0.7rem 1rem' }}>Precio Unitario</th>
+                    <th style={{ padding: '0.7rem 1rem', textAlign: 'right' }}>Total Pagado</th>
+                    <th style={{ padding: '0.7rem 1rem' }}>Proveedor / Notas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {opsState.purchases.map((p) => (
+                    <tr key={p.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      <td style={{ padding: '0.7rem 1rem', color: 'var(--color-carbon-muted)' }}>{p.date}</td>
+                      <td style={{ padding: '0.7rem 1rem', fontWeight: 600 }}>{p.materialName}</td>
+                      <td className="tabular-nums" style={{ padding: '0.7rem 1rem' }}>{p.quantity} {p.unit}</td>
+                      <td className="tabular-nums" style={{ padding: '0.7rem 1rem' }}>${p.unitPrice.toLocaleString('es-AR')}</td>
+                      <td className="tabular-nums" style={{ padding: '0.7rem 1rem', textAlign: 'right', fontWeight: 600, color: '#DC2626' }}>
+                        -${p.totalAmount.toLocaleString('es-AR')}
+                      </td>
+                      <td style={{ padding: '0.7rem 1rem', color: 'var(--color-carbon-muted)' }}>
+                        {p.supplier} {p.notes ? `(${p.notes})` : ''}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ---------------------------------------------------- */}
+        {/* TAB 3: VENDEDORES & RENDICIONES                      */}
+        {/* ---------------------------------------------------- */}
+        {activeTab === 'vendedores' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <span className="eyebrow-kicker">Chicos de Calle & Vendedores</span>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-carbon)', margin: 0 }}>
+                  Control de Mercadería y Rendición Diaria
+                </h2>
+              </div>
+              <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsNewResellerModalOpen(true)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: '#FFFFFF',
+                    color: 'var(--color-carbon)',
+                    padding: '0.6rem 1rem',
+                    borderRadius: '6px',
+                    border: '1px solid var(--color-border)',
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Plus size={14} strokeWidth={1.5} />
+                  <span>+ Nuevo Vendedor</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsAssignModalOpen(true)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: 'var(--color-carbon)',
+                    color: '#FAF8F5',
+                    padding: '0.6rem 1.15rem',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '0.86rem',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Plus size={15} strokeWidth={1.5} />
+                  <span>Asignar Mercadería a Vendedor</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Listado de Vendedores */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {opsState.resellers.map((r) => {
+                const assigned = r.assigned;
+                const pendingRendition = assigned
+                  ? Math.max(0, assigned.totalRendicion - (assigned.rendicionCobrada || 0))
+                  : 0;
+                const isPaid = assigned && assigned.rendicionCobrada >= assigned.totalRendicion;
+
+                return (
+                  <div
+                    key={r.id}
+                    style={{
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-border)',
+                      padding: '1.5rem'
+                    }}
+                  >
+                    {/* Header Vendedor */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div
+                          style={{
+                            width: '38px',
+                            height: '38px',
+                            borderRadius: '6px',
+                            backgroundColor: 'var(--color-carbon)',
+                            color: '#FAF8F5',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 700,
+                            fontSize: '0.88rem'
+                          }}
+                        >
+                          {r.initials}
+                        </div>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', fontWeight: 600, color: 'var(--color-carbon)', margin: 0 }}>
+                              {r.name}
+                            </h3>
+                            {/* Estado de Rendición */}
+                            {assigned ? (
+                              isPaid ? (
+                                <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#15803D', backgroundColor: '#F0FDF4', padding: '2px 8px', borderRadius: '4px' }}>
+                                  Rendición al día
+                                </span>
+                              ) : (
+                                <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#DC2626', backgroundColor: '#FEF2F2', padding: '2px 8px', borderRadius: '4px' }}>
+                                  Debe rendir (${pendingRendition.toLocaleString('es-AR')})
+                                </span>
+                              )
+                            ) : (
+                              <span style={{ fontSize: '0.7rem', color: 'var(--color-carbon-muted)', backgroundColor: 'var(--color-cream-light)', padding: '2px 8px', borderRadius: '4px' }}>
+                                Sin mercadería activa
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: 'var(--color-carbon-muted)', marginTop: '2px' }}>
+                            Zona: {r.zone} · Tel: {r.phone}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Deuda acumulada */}
+                      {r.debtAmount > 0 && (
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#DC2626', fontWeight: 700, letterSpacing: '0.04em' }}>
+                            Deuda Acumulada
+                          </span>
+                          <div className="tabular-nums" style={{ fontSize: '1.15rem', fontWeight: 700, color: '#DC2626' }}>
+                            ${r.debtAmount.toLocaleString('es-AR')}
+                          </div>
+                          {r.debtReason && (
+                            <div style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)' }}>
+                              {r.debtReason}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Detalle de Mercadería asignada */}
+                    {assigned && (
+                      <div
+                        style={{
+                          backgroundColor: 'var(--color-cream-light)',
+                          borderRadius: '6px',
+                          border: '1px solid var(--color-border)',
+                          padding: '1rem',
+                          marginBottom: '1rem',
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                          gap: '1rem'
+                        }}
+                      >
+                        <div>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)', textTransform: 'uppercase' }}>
+                            Mercadería asignada ({assigned.assignedDate}):
+                          </span>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--color-carbon)', fontWeight: 600, marginTop: '2px' }}>
+                            {assigned.pizzetasQueso > 0 && `${assigned.pizzetasQueso}x Pizzetas (50g) `}
+                            {assigned.paquetes10 > 0 && `· ${assigned.paquetes10}x Paq x10 `}
+                            {assigned.paquetesGrandes > 0 && `· ${assigned.paquetesGrandes}x Paq x2 Grandes`}
+                          </div>
+                          <div style={{ fontSize: '0.74rem', color: 'var(--color-carbon-subtle)', marginTop: '2px' }}>
+                            PVP total a cobrar en calle: ${assigned.totalPvp.toLocaleString('es-AR')}
+                          </div>
+                        </div>
+
+                        <div>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)', textTransform: 'uppercase' }}>
+                            Rendición a Di Borde:
+                          </span>
+                          <div className="tabular-nums" style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--color-carbon)' }}>
+                            ${assigned.totalRendicion.toLocaleString('es-AR')}
+                          </div>
+                          <div style={{ fontSize: '0.74rem', color: '#15803D', fontWeight: 500 }}>
+                            Ganancia neta del chico: +${assigned.gananciaVendedor.toLocaleString('es-AR')}
+                          </div>
+                        </div>
+
+                        <div>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)', textTransform: 'uppercase' }}>
+                            Cobrado en Fábrica:
+                          </span>
+                          <div className="tabular-nums" style={{ fontSize: '1.15rem', fontWeight: 700, color: '#15803D' }}>
+                            ${assigned.rendicionCobrada.toLocaleString('es-AR')}
+                          </div>
+                          <div style={{ fontSize: '0.74rem', color: pendingRendition > 0 ? '#DC2626' : '#15803D', fontWeight: 600 }}>
+                            {pendingRendition > 0 ? `Resta rendir: $${pendingRendition.toLocaleString('es-AR')}` : 'Rendición completa'}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Botones de acción para el vendedor */}
+                    <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      {assigned && pendingRendition > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPaymentModal({
+                              resellerId: r.id,
+                              name: r.name,
+                              pending: pendingRendition
+                            });
+                            setPaymentInputAmount(pendingRendition.toString());
+                          }}
+                          style={{
+                            backgroundColor: '#15803D',
+                            color: '#FAF8F5',
+                            padding: '0.45rem 0.9rem',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Cobrar Rendición (${pendingRendition.toLocaleString('es-AR')})
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAssignTargetReseller(r.id);
+                          setIsAssignModalOpen(true);
                         }}
                         style={{
                           backgroundColor: 'var(--color-carbon)',
                           color: '#FAF8F5',
-                          border: 'none',
+                          padding: '0.45rem 0.9rem',
                           borderRadius: '6px',
-                          padding: '6px 12px',
-                          fontSize: '0.78rem',
+                          border: 'none',
+                          fontSize: '0.8rem',
                           fontWeight: 500,
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '5px'
+                          cursor: 'pointer'
                         }}
                       >
-                        <DollarSign size={13} strokeWidth={1.5} />
-                        <span>Cobrar Rendición</span>
+                        Asignar Nuevo Lote
                       </button>
-                    )}
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDebtModal({ resellerId: r.id, name: r.name, currentDebt: r.debtAmount || 0, currentReason: r.debtReason || '' });
-                        setDebtInputAmount(r.debtAmount || 0);
-                        setDebtInputReason(r.debtReason || '');
-                      }}
-                      style={{
-                        backgroundColor: 'transparent',
-                        color: hasDebt ? '#DC2626' : 'var(--color-carbon)',
-                        border: '1px solid var(--color-border)',
-                        borderRadius: '6px',
-                        padding: '6px 12px',
-                        fontSize: '0.78rem',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '5px'
-                      }}
-                    >
-                      <Edit2 size={13} strokeWidth={1.5} />
-                      <span>{hasDebt ? 'Ajustar Saldo Deudor' : 'Anotar Deuda'}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleSendReminderWhatsApp(r)}
-                      style={{
-                        backgroundColor: 'transparent',
-                        color: '#15803D',
-                        border: '1px solid #BBF7D0',
-                        borderRadius: '6px',
-                        padding: '6px 12px',
-                        fontSize: '0.78rem',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '5px'
-                      }}
-                    >
-                      <MessageCircle size={13} strokeWidth={1.5} />
-                      <span>WhatsApp Recordatorio</span>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDebtModal({
+                            resellerId: r.id,
+                            name: r.name,
+                            currentDebt: r.debtAmount
+                          });
+                          setDebtInputAmount(r.debtAmount.toString());
+                          setDebtInputReason(r.debtReason || '');
+                        }}
+                        style={{
+                          backgroundColor: 'transparent',
+                          color: 'var(--color-carbon)',
+                          border: '1px solid var(--color-border)',
+                          padding: '0.45rem 0.9rem',
+                          borderRadius: '6px',
+                          fontSize: '0.8rem',
+                          fontWeight: 500,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Gestionar Deuda
+                      </button>
+                    </div>
                   </div>
-
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
 
-        {/* ======================================================== */}
-        {/* TAB 2: ASIGNAR MERCADERÍA                                */}
-        {/* ======================================================== */}
-        {activeTab === 'assign' && (
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', padding: '2rem', border: '1px solid var(--color-border)' }}>
-            <span className="eyebrow-kicker">CONTROL DE LOTES</span>
-            <h2 className="font-serif" style={{ fontSize: '1.4rem', fontWeight: 600, color: 'var(--color-carbon)', margin: '0 0 0.5rem 0' }}>
-              Asignar Mercadería a Revendedor
-            </h2>
-            <p style={{ fontSize: '0.86rem', color: 'var(--color-carbon-muted)', marginBottom: '1.75rem' }}>
-              Seleccioná al revendedor y las unidades a entregar. El stock se descuenta automáticamente del obrador en tiempo real.
-            </p>
-
-            <form onSubmit={handleConfirmAssignment}>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-carbon)', display: 'block', marginBottom: '6px' }}>
-                  Revendedor Destinatario:
-                </label>
-                <select
-                  value={assignTargetReseller}
-                  onChange={(e) => setAssignTargetReseller(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--color-border)',
-                    fontSize: '0.9rem',
-                    backgroundColor: 'var(--color-cream)'
-                  }}
-                >
-                  {opsState.resellers.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name} (@{r.username}) - {r.zone} {r.debtAmount > 0 ? `(Deuda: $${r.debtAmount.toLocaleString('es-AR')})` : ''}
-                    </option>
-                  ))}
-                </select>
+        {/* ---------------------------------------------------- */}
+        {/* TAB 4: SUGERENCIAS Y REPORTES DE VENDEDORES          */}
+        {/* ---------------------------------------------------- */}
+        {activeTab === 'sugerencias' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <span className="eyebrow-kicker">Feedback de Calle</span>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-carbon)', margin: 0 }}>
+                  Reportes de Venta y Sugerencias de los Vendedores
+                </h2>
               </div>
-
-              {/* Cantidades a entregar */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-                <div style={{ backgroundColor: 'var(--color-cream)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--color-border)' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
-                    Pizzetas con queso ($800 PVP):
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={assignPizzetas}
-                    onChange={(e) => setAssignPizzetas(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="tabular-nums"
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '4px', border: '1px solid var(--color-border)', fontSize: '1.05rem', fontWeight: 600 }}
-                  />
-                  <span className="tabular-nums" style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)', marginTop: '4px', display: 'block' }}>
-                    Disponible en obrador: {opsState.stock['pizzeta-con-queso']} unid.
-                  </span>
-                </div>
-
-                <div style={{ backgroundColor: 'var(--color-cream)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--color-border)' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
-                    Paquetes x10 Pre-pizzetas:
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={assignPaquetes10}
-                    onChange={(e) => setAssignPaquetes10(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="tabular-nums"
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '4px', border: '1px solid var(--color-border)', fontSize: '1.05rem', fontWeight: 600 }}
-                  />
-                  <span className="tabular-nums" style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)', marginTop: '4px', display: 'block' }}>
-                    Disponible en obrador: {opsState.stock['paquete-10-prepizzetas']} paq.
-                  </span>
-                </div>
-
-                <div style={{ backgroundColor: 'var(--color-cream)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--color-border)' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
-                    Paquetes x2 Grandes:
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={assignPaquetesGrandes}
-                    onChange={(e) => setAssignPaquetesGrandes(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="tabular-nums"
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '4px', border: '1px solid var(--color-border)', fontSize: '1.05rem', fontWeight: 600 }}
-                  />
-                  <span className="tabular-nums" style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)', marginTop: '4px', display: 'block' }}>
-                    Disponible en obrador: {opsState.stock['paquete-2-prepizzas-grandes']} paq.
-                  </span>
-                </div>
-              </div>
-
-              {/* Vista previa cálculo tipo Stripe/Linear */}
-              <div
+              <button
+                type="button"
+                onClick={() => setIsNoteModalOpen(true)}
                 style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
                   backgroundColor: 'var(--color-carbon)',
                   color: '#FAF8F5',
-                  borderRadius: '8px',
-                  padding: '1.25rem 1.5rem',
-                  marginBottom: '1.5rem',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: '1rem'
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '0.74rem', color: '#A8A29E' }}>Rendición a entregar a Di Borde:</div>
-                  <div className="tabular-nums font-serif" style={{ fontSize: '1.4rem', fontWeight: 600, color: '#4ADE80' }}>
-                    ${((assignPizzetas * 400) + (assignPaquetes10 * 2000) + (assignPaquetesGrandes * 1800)).toLocaleString('es-AR')}
-                  </div>
-                </div>
-
-                <div>
-                  <div style={{ fontSize: '0.74rem', color: '#A8A29E' }}>Recaudación total en calle:</div>
-                  <div className="tabular-nums font-serif" style={{ fontSize: '1.2rem', fontWeight: 600 }}>
-                    ${((assignPizzetas * 800) + (assignPaquetes10 * 2500) + (assignPaquetesGrandes * 2500)).toLocaleString('es-AR')}
-                  </div>
-                </div>
-
-                <div>
-                  <div style={{ fontSize: '0.74rem', color: '#A8A29E' }}>Ganancia estimada del revendedor:</div>
-                  <div className="tabular-nums font-serif" style={{ fontSize: '1.2rem', fontWeight: 600, color: '#FCD34D' }}>
-                    +${(((assignPizzetas * 800) + (assignPaquetes10 * 2500) + (assignPaquetesGrandes * 2500)) - ((assignPizzetas * 400) + (assignPaquetes10 * 2000) + (assignPaquetesGrandes * 1800))).toLocaleString('es-AR')}
-                  </div>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                style={{
-                  width: '100%',
-                  backgroundColor: 'var(--color-primary)',
-                  color: '#FAF8F5',
-                  border: 'none',
+                  padding: '0.6rem 1.15rem',
                   borderRadius: '6px',
-                  padding: '0.85rem',
-                  fontSize: '0.88rem',
+                  border: 'none',
+                  fontSize: '0.86rem',
                   fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all var(--transition-fast)'
+                  cursor: 'pointer'
                 }}
               >
-                Confirmar y Descontar Mercadería
+                <Plus size={15} strokeWidth={1.5} />
+                <span>Cargar Reporte o Sugerencia</span>
               </button>
-            </form>
-          </div>
-        )}
-
-        {/* ======================================================== */}
-        {/* TAB 3: PEDIDOS                                           */}
-        {/* ======================================================== */}
-        {activeTab === 'orders' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {/* Formulario nuevo pedido */}
-            <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
-              <span className="eyebrow-kicker">REGISTRO MANUAL</span>
-              <h3 className="font-serif" style={{ fontSize: '1.2rem', fontWeight: 600, margin: '0 0 1rem 0' }}>
-                Crear Nuevo Pedido de Cliente o Comercio
-              </h3>
-
-              <form onSubmit={handleCreateOrderSubmit}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-                  <div>
-                    <label style={{ fontSize: '0.78rem', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Cliente / Negocio:</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Ej: Cafetería Central"
-                      value={newOrderCustomer}
-                      onChange={(e) => setNewOrderCustomer(e.target.value)}
-                      style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--color-border)' }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: '0.78rem', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Teléfono WhatsApp:</label>
-                    <input
-                      type="text"
-                      placeholder="Ej: 2645112233"
-                      value={newOrderPhone}
-                      onChange={(e) => setNewOrderPhone(e.target.value)}
-                      style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--color-border)' }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: '0.78rem', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Dirección / Modalidad:</label>
-                    <input
-                      type="text"
-                      placeholder="Ej: Mitre 450 (Delivery)"
-                      value={newOrderAddress}
-                      onChange={(e) => setNewOrderAddress(e.target.value)}
-                      style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--color-border)' }}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                  <div>
-                    <label style={{ fontSize: '0.78rem', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Detalle Productos:</label>
-                    <input
-                      type="text"
-                      value={newOrderItems}
-                      onChange={(e) => setNewOrderItems(e.target.value)}
-                      style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--color-border)' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '0.78rem', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Total ($):</label>
-                    <input
-                      type="number"
-                      value={newOrderTotal}
-                      onChange={(e) => setNewOrderTotal(e.target.value)}
-                      className="tabular-nums"
-                      style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--color-border)', fontWeight: 600 }}
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  style={{
-                    backgroundColor: 'var(--color-carbon)',
-                    color: '#FAF8F5',
-                    border: 'none',
-                    borderRadius: '6px',
-                    padding: '8px 16px',
-                    fontWeight: 600,
-                    fontSize: '0.82rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  + Agregar Pedido a la Lista
-                </button>
-              </form>
             </div>
 
-            {/* Lista de pedidos */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-              {opsState.orders.map((ord) => (
-                <div
-                  key={ord.id}
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: '8px',
-                    padding: '1rem 1.25rem',
-                    border: '1px solid var(--color-border)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '1rem'
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontWeight: 600, fontSize: '0.94rem', color: 'var(--color-carbon)' }}>{ord.customerName}</span>
-                      <span className="tabular-nums" style={{ fontSize: '0.72rem', backgroundColor: 'var(--color-cream)', padding: '2px 6px', borderRadius: '4px', color: 'var(--color-carbon-muted)' }}>{ord.id}</span>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--color-carbon-subtle)' }}>{ord.date}</span>
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--color-carbon-muted)', marginTop: '2px' }}>
-                      {ord.itemsSummary} · {ord.address}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ textAlign: 'right' }}>
-                      <div className="tabular-nums font-serif" style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-carbon)' }}>
-                        ${ord.total.toLocaleString('es-AR')}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {opsState.resellerNotes.map((note) => {
+                const isPending = note.status === 'pendiente_accion';
+                return (
+                  <div
+                    key={note.id}
+                    style={{
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: '8px',
+                      border: isPending ? '1px solid #D97706' : '1px solid var(--color-border)',
+                      padding: '1.25rem'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span
+                          style={{
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            backgroundColor: note.type === 'venta' ? '#F0FDF4' : note.type === 'pedido_cliente' ? '#EFF6FF' : '#FEF3C7',
+                            color: note.type === 'venta' ? '#15803D' : note.type === 'pedido_cliente' ? '#2563EB' : '#B45309'
+                          }}
+                        >
+                          {note.type === 'venta' ? 'Reporte Venta' : note.type === 'pedido_cliente' ? 'Pedido Comercio' : 'Sugerencia'}
+                        </span>
+                        <strong style={{ fontSize: '0.92rem', color: 'var(--color-carbon)' }}>{note.resellerName}</strong>
+                        <span style={{ fontSize: '0.76rem', color: 'var(--color-carbon-subtle)' }}>({note.date})</span>
                       </div>
-                      <span
+
+                      <button
+                        type="button"
+                        onClick={() => toggleResellerNoteStatus(note.id)}
                         style={{
-                          fontSize: '0.68rem',
-                          fontWeight: 600,
-                          textTransform: 'uppercase',
-                          color: ord.status === 'entregado' ? '#15803D' : ord.status === 'en_camino' ? '#D97706' : 'var(--color-carbon-muted)'
+                          fontSize: '0.74rem',
+                          color: isPending ? '#B45309' : 'var(--color-carbon-muted)',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontWeight: 600
                         }}
                       >
-                        {ord.status}
-                      </span>
+                        {isPending ? 'Marcar como Revisado' : 'Reabrir'}
+                      </button>
                     </div>
 
-                    <select
-                      value={ord.status}
-                      onChange={(e) => updateOrderStatus(ord.id, e.target.value)}
-                      style={{ padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--color-border)', fontSize: '0.78rem', backgroundColor: '#FFFFFF' }}
-                    >
-                      <option value="pendiente">Pendiente</option>
-                      <option value="en_camino">En camino</option>
-                      <option value="entregado">Entregado</option>
-                    </select>
+                    <p style={{ fontSize: '0.88rem', color: 'var(--color-carbon)', lineHeight: 1.5, margin: 0 }}>
+                      "{note.content}"
+                    </p>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* ======================================================== */}
-        {/* TAB 4: STOCK OBRADOR                                     */}
-        {/* ======================================================== */}
-        {activeTab === 'stock' && (
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', padding: '2rem', border: '1px solid var(--color-border)' }}>
-            <span className="eyebrow-kicker">INVENTARIO EN VIVO</span>
-            <h2 className="font-serif" style={{ fontSize: '1.4rem', fontWeight: 600, color: 'var(--color-carbon)', margin: '0 0 1rem 0' }}>
-              Control y Suma de Producción
-            </h2>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
-              <div style={{ backgroundColor: 'var(--color-cream)', borderRadius: '8px', padding: '1.25rem', border: '1px solid var(--color-border)' }}>
-                <h3 style={{ fontSize: '0.94rem', fontWeight: 600, margin: '0 0 4px 0' }}>Pizzetas con Queso</h3>
-                <div className="tabular-nums font-serif" style={{ fontSize: '2rem', fontWeight: 600, color: 'var(--color-carbon)' }}>
-                  {opsState.stock['pizzeta-con-queso']} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--color-carbon-muted)' }}>unid.</span>
-                </div>
-                <div style={{ display: 'flex', gap: '6px', marginTop: '1rem' }}>
-                  <button onClick={() => addProductionStock('pizzeta-con-queso', 20)} style={{ flex: 1, padding: '7px', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#fff', border: 'none', fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer' }}>+20</button>
-                  <button onClick={() => addProductionStock('pizzeta-con-queso', 50)} style={{ flex: 1, padding: '7px', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#fff', border: 'none', fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer' }}>+50</button>
-                </div>
+        {/* ---------------------------------------------------- */}
+        {/* TAB 5: PEDIDOS & VENTAS                              */}
+        {/* ---------------------------------------------------- */}
+        {activeTab === 'pedidos' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <span className="eyebrow-kicker">Atención de Pedidos</span>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-carbon)', margin: 0 }}>
+                  Pedidos Realizados y en Proceso
+                </h2>
               </div>
+              <button
+                type="button"
+                onClick={() => setIsOrderModalOpen(true)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: 'var(--color-carbon)',
+                  color: '#FAF8F5',
+                  padding: '0.6rem 1.15rem',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontSize: '0.86rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                <Plus size={15} strokeWidth={1.5} />
+                <span>Cargar Nuevo Pedido</span>
+              </button>
+            </div>
 
-              <div style={{ backgroundColor: 'var(--color-cream)', borderRadius: '8px', padding: '1.25rem', border: '1px solid var(--color-border)' }}>
-                <h3 style={{ fontSize: '0.94rem', fontWeight: 600, margin: '0 0 4px 0' }}>Paquetes x10 Pre-pizzetas</h3>
-                <div className="tabular-nums font-serif" style={{ fontSize: '2rem', fontWeight: 600, color: 'var(--color-carbon)' }}>
-                  {opsState.stock['paquete-10-prepizzetas']} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--color-carbon-muted)' }}>paq.</span>
-                </div>
-                <div style={{ display: 'flex', gap: '6px', marginTop: '1rem' }}>
-                  <button onClick={() => addProductionStock('paquete-10-prepizzetas', 10)} style={{ flex: 1, padding: '7px', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#fff', border: 'none', fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer' }}>+10</button>
-                  <button onClick={() => addProductionStock('paquete-10-prepizzetas', 25)} style={{ flex: 1, padding: '7px', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#fff', border: 'none', fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer' }}>+25</button>
-                </div>
-              </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {opsState.orders.map((order) => {
+                const getStatusColor = (s) => {
+                  if (s === 'entregado_cobrado') return { bg: '#F0FDF4', color: '#15803D', label: 'Entregado y Cobrado' };
+                  if (s === 'en_reparto') return { bg: '#EFF6FF', color: '#2563EB', label: 'En Reparto' };
+                  if (s === 'en_elaboracion') return { bg: '#FEF3C7', color: '#B45309', label: 'En Elaboración' };
+                  return { bg: '#F3F4F6', color: '#4B5563', label: 'Pendiente' };
+                };
+                const st = getStatusColor(order.status);
 
-              <div style={{ backgroundColor: 'var(--color-cream)', borderRadius: '8px', padding: '1.25rem', border: '1px solid var(--color-border)' }}>
-                <h3 style={{ fontSize: '0.94rem', fontWeight: 600, margin: '0 0 4px 0' }}>Paquetes x2 Grandes</h3>
-                <div className="tabular-nums font-serif" style={{ fontSize: '2rem', fontWeight: 600, color: 'var(--color-carbon)' }}>
-                  {opsState.stock['paquete-2-prepizzas-grandes']} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--color-carbon-muted)' }}>paq.</span>
-                </div>
-                <div style={{ display: 'flex', gap: '6px', marginTop: '1rem' }}>
-                  <button onClick={() => addProductionStock('paquete-2-prepizzas-grandes', 10)} style={{ flex: 1, padding: '7px', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#fff', border: 'none', fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer' }}>+10</button>
-                  <button onClick={() => addProductionStock('paquete-2-prepizzas-grandes', 20)} style={{ flex: 1, padding: '7px', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#fff', border: 'none', fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer' }}>+20</button>
-                </div>
-              </div>
+                return (
+                  <div
+                    key={order.id}
+                    style={{
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-border)',
+                      padding: '1.25rem',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: '1rem'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-carbon-muted)' }}>{order.id}</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: st.bg, color: st.color }}>
+                          {st.label}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-carbon-subtle)' }}>({order.date})</span>
+                      </div>
+                      <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-carbon)', margin: 0 }}>
+                        {order.customerName}
+                      </h4>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--color-carbon-muted)', marginTop: '2px' }}>
+                        {order.itemsSummary}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--color-carbon-subtle)', marginTop: '2px' }}>
+                        {order.deliveryType === 'pickup' ? 'Retiro en obrador' : `Envío: ${order.address}`} · Tel: {order.phone}
+                      </div>
+                    </div>
+
+                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                      <div className="tabular-nums" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-carbon)' }}>
+                        ${order.total.toLocaleString('es-AR')}
+                      </div>
+
+                      {/* Selector rápido de estado */}
+                      <select
+                        value={order.status}
+                        onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                        style={{
+                          fontSize: '0.78rem',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          border: '1px solid var(--color-border)',
+                          backgroundColor: '#FFFFFF',
+                          color: 'var(--color-carbon)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <option value="pendiente">Pendiente</option>
+                        <option value="en_elaboracion">En Elaboración</option>
+                        <option value="en_reparto">En Reparto</option>
+                        <option value="entregado_cobrado">Entregado y Cobrado</option>
+                      </select>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
 
-      </div>
+      </main>
 
       {/* ======================================================== */}
-      {/* MODAL: REGISTRAR COBRO DE RENDICIÓN                      */}
+      {/* 5. MODALES DE GESTIÓN RÁPIDA                             */}
       {/* ======================================================== */}
-      {paymentModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28, 25, 23, 0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 9999 }}>
-          <div style={{ backgroundColor: '#fff', borderRadius: '8px', padding: '1.75rem', maxWidth: '380px', width: '100%', border: '1px solid var(--color-border)' }}>
-            <h3 className="font-serif" style={{ margin: '0 0 6px 0', fontSize: '1.25rem' }}>Registrar Cobro de Rendición</h3>
-            <p style={{ fontSize: '0.84rem', color: 'var(--color-carbon-muted)', margin: '0 0 1rem 0' }}>
-              Cobro a <strong>{paymentModal.name}</strong>. Pendiente hoy: ${paymentModal.pending.toLocaleString('es-AR')}.
-            </p>
 
-            <form onSubmit={handleConfirmPayment}>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Monto cobrado ($):</label>
-              <input
-                type="number"
-                value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-                className="tabular-nums"
-                style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--color-border)', fontSize: '1.2rem', fontWeight: 600, marginBottom: '1.25rem' }}
-              />
-
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button type="button" onClick={() => setPaymentModal(null)} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid var(--color-border)', backgroundColor: '#fff', fontSize: '0.84rem', cursor: 'pointer' }}>Cancelar</button>
-                <button type="submit" style={{ flex: 1, padding: '8px', borderRadius: '6px', border: 'none', backgroundColor: 'var(--color-carbon)', color: '#fff', fontWeight: 600, fontSize: '0.84rem', cursor: 'pointer' }}>Confirmar Cobro</button>
+      {/* Modal: Nuevo Movimiento de Caja */}
+      {isCashflowModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28,25,23,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '1rem' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', maxWidth: '440px', width: '100%', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', margin: 0 }}>Registrar Movimiento de Caja</h3>
+              <button onClick={() => setIsCashflowModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleCreateCashflow} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Tipo de movimiento:</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  <button type="button" onClick={() => setCashflowType('ingreso')} style={{ padding: '0.5rem', borderRadius: '4px', border: cashflowType === 'ingreso' ? '2px solid #15803D' : '1px solid var(--color-border)', backgroundColor: cashflowType === 'ingreso' ? '#F0FDF4' : '#FFF', color: cashflowType === 'ingreso' ? '#15803D' : '#57534E', fontWeight: 600, cursor: 'pointer' }}>Ingreso (+)</button>
+                  <button type="button" onClick={() => setCashflowType('egreso')} style={{ padding: '0.5rem', borderRadius: '4px', border: cashflowType === 'egreso' ? '2px solid #DC2626' : '1px solid var(--color-border)', backgroundColor: cashflowType === 'egreso' ? '#FEF2F2' : '#FFF', color: cashflowType === 'egreso' ? '#DC2626' : '#57534E', fontWeight: 600, cursor: 'pointer' }}>Egreso (-)</button>
+                </div>
               </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Categoría:</label>
+                <input type="text" required placeholder="ej: Venta Mayorista, Compra Insumos, Gas, etc." value={cashflowCategory} onChange={(e) => setCashflowCategory(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Concepto / Detalle:</label>
+                <input type="text" required placeholder="ej: Cobro pedido almacén / Garrafa de gas" value={cashflowConcept} onChange={(e) => setCashflowConcept(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Monto ($ ARS):</label>
+                <input type="number" required min="1" placeholder="ej: 14000" value={cashflowAmount} onChange={(e) => setCashflowAmount(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Guardar en Caja</button>
             </form>
           </div>
         </div>
       )}
 
-      {/* ======================================================== */}
-      {/* MODAL: AJUSTAR DEUDA / SALDO ROJO                        */}
-      {/* ======================================================== */}
-      {debtModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28, 25, 23, 0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 9999 }}>
-          <div style={{ backgroundColor: '#fff', borderRadius: '8px', padding: '1.75rem', maxWidth: '400px', width: '100%', border: '1px solid var(--color-border)' }}>
-            <h3 className="font-serif" style={{ margin: '0 0 6px 0', fontSize: '1.25rem', color: 'var(--color-carbon)' }}>Ajustar Saldo Deudor</h3>
-            <p style={{ fontSize: '0.84rem', color: 'var(--color-carbon-muted)', margin: '0 0 1rem 0' }}>
-              Revendedor: <strong>{debtModal.name}</strong>. Se reflejará en su panel personal.
-            </p>
-
-            <form onSubmit={handleConfirmDebt}>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Monto de Deuda ($):</label>
-              <input
-                type="number"
-                value={debtInputAmount}
-                onChange={(e) => setDebtInputAmount(e.target.value)}
-                className="tabular-nums"
-                style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--color-border)', fontSize: '1.2rem', fontWeight: 600, color: '#DC2626', marginBottom: '1rem' }}
-              />
-
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Motivo anotado (visible en su panel):</label>
-              <input
-                type="text"
-                placeholder="Ej: Mercadería consumida sin rendir"
-                value={debtInputReason}
-                onChange={(e) => setDebtInputReason(e.target.value)}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--color-border)', fontSize: '0.86rem', marginBottom: '1.25rem' }}
-              />
-
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button type="button" onClick={() => setDebtModal(null)} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid var(--color-border)', backgroundColor: '#fff', fontSize: '0.84rem', cursor: 'pointer' }}>Cancelar</button>
-                <button type="submit" style={{ flex: 1, padding: '8px', borderRadius: '6px', border: 'none', backgroundColor: '#DC2626', color: '#fff', fontWeight: 600, fontSize: '0.84rem', cursor: 'pointer' }}>Guardar Registro</button>
+      {/* Modal: Cargar Nueva Compra de Insumos */}
+      {isPurchaseModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28,25,23,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '1rem' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', maxWidth: '460px', width: '100%', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', margin: 0 }}>Cargar Compra de Insumos</h3>
+              <button onClick={() => setIsPurchaseModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleCreatePurchase} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Materia Prima / Insumo:</label>
+                <select value={purchaseMaterialId} onChange={(e) => setPurchaseMaterialId(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                  {opsState.rawMaterials.map((m) => (
+                    <option key={m.id} value={m.id}>{m.name} ({m.unit})</option>
+                  ))}
+                </select>
               </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Cantidad Comprada:</label>
+                  <input type="number" required step="0.01" min="0.1" placeholder="ej: 50" value={purchaseQuantity} onChange={(e) => setPurchaseQuantity(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Precio Unitario ($):</label>
+                  <input type="number" required step="0.01" min="1" placeholder="ej: 803.38" value={purchaseUnitPrice} onChange={(e) => setPurchaseUnitPrice(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Proveedor:</label>
+                <input type="text" placeholder="ej: Lácteos San Juan / Papelera" value={purchaseSupplier} onChange={(e) => setPurchaseSupplier(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Notas (opcional):</label>
+                <input type="text" placeholder="ej: 3 hormas cerradas / pack x100" value={purchaseNotes} onChange={(e) => setPurchaseNotes(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--color-carbon-muted)', backgroundColor: 'var(--color-cream-light)', padding: '6px', borderRadius: '4px' }}>
+                Nota: Esta compra sumará al stock del insumo y creará automáticamente un egreso en la Caja.
+              </div>
+              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Guardar Compra</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Asignar Mercadería */}
+      {isAssignModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28,25,23,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '1rem' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', maxWidth: '440px', width: '100%', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', margin: 0 }}>Asignar Mercadería a Vendedor</h3>
+              <button onClick={() => setIsAssignModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleConfirmAssignment} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Vendedor:</label>
+                <select value={assignTargetReseller} onChange={(e) => setAssignTargetReseller(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                  {opsState.resellers.map((r) => (
+                    <option key={r.id} value={r.id}>{r.name} ({r.zone})</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.4rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Pizzetas 50g:</label>
+                  <input type="number" min="0" value={assignPizzetas} onChange={(e) => setAssignPizzetas(e.target.value)} style={{ width: '100%', padding: '0.45rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Paq x10:</label>
+                  <input type="number" min="0" value={assignPaquetes10} onChange={(e) => setAssignPaquetes10(e.target.value)} style={{ width: '100%', padding: '0.45rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Paq x2 Gdes:</label>
+                  <input type="number" min="0" value={assignPaquetesGrandes} onChange={(e) => setAssignPaquetesGrandes(e.target.value)} style={{ width: '100%', padding: '0.45rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Turno / Referencia:</label>
+                <input type="text" value={assignNote} onChange={(e) => setAssignNote(e.target.value)} placeholder="ej: Turno Mañana / Tarde" style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--color-carbon-muted)', backgroundColor: 'var(--color-cream-light)', padding: '6px', borderRadius: '4px' }}>
+                Rendición esperada: ${(assignPizzetas * 400 + assignPaquetes10 * 2000 + assignPaquetesGrandes * 1800).toLocaleString('es-AR')}
+              </div>
+              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Confirmar Asignación</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Cobrar Rendición */}
+      {paymentModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28,25,23,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '1rem' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', maxWidth: '400px', width: '100%', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', margin: 0 }}>Registrar Cobro Rendición</h3>
+              <button onClick={() => setPaymentModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleConfirmPayment} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ fontSize: '0.85rem' }}>
+                Vendedor: <strong>{paymentModal.name}</strong>
+              </div>
+              <div style={{ fontSize: '0.82rem', color: 'var(--color-carbon-muted)' }}>
+                Rendición pendiente: ${paymentModal.pending.toLocaleString('es-AR')}
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Monto a cobrar ($):</label>
+                <input type="number" required min="1" max={paymentModal.pending} value={paymentInputAmount} onChange={(e) => setPaymentInputAmount(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: '#15803D', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Confirmar Cobro en Caja</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Gestionar Deuda */}
+      {debtModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28,25,23,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '1rem' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', maxWidth: '400px', width: '100%', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', margin: 0 }}>Gestionar Deuda de Vendedor</h3>
+              <button onClick={() => setDebtModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleConfirmDebt} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ fontSize: '0.85rem' }}>
+                Vendedor: <strong>{debtModal.name}</strong>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Nuevo Saldo Deudor ($ 0 para saldar):</label>
+                <input type="number" min="0" value={debtInputAmount} onChange={(e) => setDebtInputAmount(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Motivo / Detalle:</label>
+                <input type="text" placeholder="ej: Mercadería consumida sin rendir" value={debtInputReason} onChange={(e) => setDebtInputReason(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Guardar Deuda</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Ajustar Stock Físico Insumo */}
+      {adjustMaterialModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28,25,23,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '1rem' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', maxWidth: '380px', width: '100%', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', margin: 0 }}>Ajustar Stock Físico</h3>
+              <button onClick={() => setAdjustMaterialModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleConfirmStockAdjust} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ fontSize: '0.85rem' }}>
+                Insumo: <strong>{adjustMaterialModal.name}</strong>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Cantidad física real ({adjustMaterialModal.unit}):</label>
+                <input type="number" required step="0.01" min="0" value={adjustStockVal} onChange={(e) => setAdjustStockVal(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Actualizar Stock</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Cargar Nota / Sugerencia */}
+      {isNoteModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28,25,23,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '1rem' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', maxWidth: '440px', width: '100%', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', margin: 0 }}>Nuevo Reporte o Sugerencia</h3>
+              <button onClick={() => setIsNoteModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleCreateNote} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Vendedor que reporta:</label>
+                <select value={noteResellerId} onChange={(e) => setNoteResellerId(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                  {opsState.resellers.map((r) => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Tipo de reporte:</label>
+                <select value={noteType} onChange={(e) => setNoteType(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                  <option value="venta">Reporte de venta (ej: vendí todo en tal plaza)</option>
+                  <option value="sugerencia">Sugerencia (ej: agregar orégano, cambiar horario)</option>
+                  <option value="pedido_cliente">Pedido pedido por un comercio o cliente</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Detalle del mensaje:</label>
+                <textarea required rows={3} placeholder="Escribí lo que informó el vendedor..." value={noteContent} onChange={(e) => setNoteContent(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Guardar Nota</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Cargar Pedido */}
+      {isOrderModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28,25,23,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '1rem' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', maxWidth: '440px', width: '100%', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', margin: 0 }}>Cargar Nuevo Pedido</h3>
+              <button onClick={() => setIsOrderModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleCreateOrder} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Cliente o Comercio:</label>
+                <input type="text" required placeholder="ej: Almacén Moreno / Juan Pérez" value={orderCustomer} onChange={(e) => setOrderCustomer(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Teléfono:</label>
+                  <input type="text" placeholder="ej: 264 123-4567" value={orderPhone} onChange={(e) => setOrderPhone(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Total ($):</label>
+                  <input type="number" required min="1" placeholder="ej: 7000" value={orderTotal} onChange={(e) => setOrderTotal(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Variedades / Detalle:</label>
+                <input type="text" required placeholder="ej: 3x Paquete x10 Pre-pizzetas" value={orderItems} onChange={(e) => setOrderItems(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Dirección de Entrega:</label>
+                <input type="text" placeholder="ej: Mendoza 840 Sur / Retiro en obrador" value={orderAddress} onChange={(e) => setOrderAddress(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Guardar Pedido</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Nuevo Insumo para Elaborar */}
+      {isNewMaterialModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28,25,23,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '1rem' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', maxWidth: '440px', width: '100%', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', margin: 0 }}>Nuevo Insumo para Elaborar</h3>
+              <button onClick={() => setIsNewMaterialModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleCreateNewMaterial} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Nombre del Insumo / Materia Prima:</label>
+                <input type="text" required placeholder="ej: Orégano Seleccionado / Harina 000" value={newMatName} onChange={(e) => setNewMatName(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Categoría:</label>
+                  <input type="text" placeholder="ej: Condimento / Insumo" value={newMatCategory} onChange={(e) => setNewMatCategory(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Unidad de Medida:</label>
+                  <select value={newMatUnit} onChange={(e) => setNewMatUnit(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                    <option value="kg">kg (Kilogramos)</option>
+                    <option value="sachet">sachet</option>
+                    <option value="litro">litro</option>
+                    <option value="unid.">unid. (Unidades)</option>
+                    <option value="paquete">paquete</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Stock Físico Inicial:</label>
+                  <input type="number" step="0.01" min="0" placeholder="ej: 10" value={newMatStock} onChange={(e) => setNewMatStock(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Alerta Stock Mínimo:</label>
+                  <input type="number" step="0.01" min="0" placeholder="ej: 5" value={newMatMinAlert} onChange={(e) => setNewMatMinAlert(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Último Precio Unit. ($):</label>
+                  <input type="number" step="0.01" min="0" placeholder="ej: 1200" value={newMatPrice} onChange={(e) => setNewMatPrice(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Proveedor:</label>
+                  <input type="text" placeholder="ej: Distribuidora Central" value={newMatSupplier} onChange={(e) => setNewMatSupplier(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+              </div>
+              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Guardar Insumo</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Registrar Nuevo Vendedor */}
+      {isNewResellerModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28,25,23,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '1rem' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', maxWidth: '420px', width: '100%', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', margin: 0 }}>Registrar Nuevo Vendedor</h3>
+              <button onClick={() => setIsNewResellerModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleCreateNewReseller} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Nombre y Apellido del Vendedor:</label>
+                <input type="text" required placeholder="ej: Joaquín Pereyra" value={newResellerName} onChange={(e) => setNewResellerName(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Teléfono / WhatsApp:</label>
+                <input type="text" placeholder="ej: +54 9 264 555-0199" value={newResellerPhone} onChange={(e) => setNewResellerPhone(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Zona Habitual de Venta:</label>
+                <input type="text" placeholder="ej: Plaza de Chimbas / Parque de Mayo" value={newResellerZone} onChange={(e) => setNewResellerZone(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+              </div>
+              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Guardar Vendedor</button>
             </form>
           </div>
         </div>

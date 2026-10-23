@@ -217,8 +217,8 @@ export default function ObradorView() {
                 <Award size={18} strokeWidth={1.5} />
               </div>
               <div>
-                <h4 style={{ color: '#FAF8F5', fontSize: '0.94rem', fontWeight: 600, margin: '0 0 2px 0' }}>Muzzarella vacuna pura</h4>
-                <p style={{ color: 'rgba(250, 248, 245, 0.65)', fontSize: '0.82rem', margin: 0, lineHeight: 1.45 }}>Queso de primera calidad sin análogos ni almidones agregados.</p>
+                <h4 style={{ color: '#FAF8F5', fontSize: '0.94rem', fontWeight: 600, margin: '0 0 2px 0' }}>Queso cremoso fundido</h4>
+                <p style={{ color: 'rgba(250, 248, 245, 0.65)', fontSize: '0.82rem', margin: 0, lineHeight: 1.45 }}>Queso cremoso seleccionado que gratina y funde a la perfección.</p>
               </div>
             </div>
           </div>

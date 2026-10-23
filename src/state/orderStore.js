@@ -8,7 +8,7 @@ const SEED_ORDERS = [
     status: "En camino",
     statusStep: 3, // 1: Recibido, 2: En el horno, 3: En camino, 4: Entregado
     items: [
-      { name: "Pizzetas Clásicas Muzzarella (Pack x6)", quantity: 2, price: 6800 },
+      { name: "Pizzetas con Queso Cremoso", quantity: 2, price: 6800 },
       { name: "Prepizza Tradicional de Masa Madre (Pack x2)", quantity: 1, price: 4900 }
     ],
     customer: {

@@ -36,7 +36,7 @@ export default function CatalogView() {
             Nuestras Variedades
           </h1>
           <p style={{ color: 'var(--color-carbon-muted)', fontSize: '0.96rem', margin: 0, maxWidth: '580px' }}>
-            Elaboración casera con salsa de tomates seleccionados y abundante muzzarella de primera línea.
+            Elaboración casera con salsa de tomate y abundante queso cremoso fundido.
           </p>
         </div>
 

@@ -1,22 +1,18 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import AdminDashboard from './AdminDashboard.jsx';
-import ResellerDashboard from './ResellerDashboard.jsx';
-import { Lock, User, ArrowRight, AlertCircle, Shield } from 'lucide-react';
+import { Lock, User, ArrowRight, AlertCircle, Shield, ArrowLeft } from 'lucide-react';
 
 export default function PortalLoginView() {
-  const { currentUser, login, quickLoginAs } = useAuth();
+  const { currentUser, login, loginAsAdmin } = useAuth();
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('1234');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Si ya está logueado, mostrar el panel correspondiente
-  if (currentUser) {
-    if (currentUser.role === 'admin') {
-      return <AdminDashboard />;
-    }
-    return <ResellerDashboard />;
+  // Si ya está logueado como admin, mostrar el panel
+  if (currentUser && currentUser.role === 'admin') {
+    return <AdminDashboard />;
   }
 
   const handleSubmit = (e) => {
@@ -25,24 +21,66 @@ export default function PortalLoginView() {
 
     const res = login(username, password);
     if (!res.success) {
-      setErrorMsg(res.message || 'Usuario o contraseña no válidos.');
+      setErrorMsg(res.message || 'Usuario o clave no válidos.');
     }
   };
 
-  return (
-    <div style={{ backgroundColor: 'var(--color-cream)', minHeight: '85vh', padding: '3.5rem 1rem 6rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ maxWidth: '420px', width: '100%' }}>
+  const handleQuickAdmin = () => {
+    loginAsAdmin();
+  };
 
+  return (
+    <div
+      style={{
+        backgroundColor: 'var(--color-cream)',
+        minHeight: '85vh',
+        padding: '3.5rem 1rem 6rem 1rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <div style={{ maxWidth: '420px', width: '100%' }}>
         {/* Brand Header */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <span className="eyebrow-kicker" style={{ marginBottom: '0.5rem' }}>
-            ACCESO PRIVADO
-          </span>
-          <h1 className="font-serif" style={{ fontSize: '1.85rem', fontWeight: 600, color: 'var(--color-carbon)', margin: '0 0 0.4rem 0' }}>
-            Portal Di Borde
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: 'rgba(28, 25, 23, 0.06)',
+              padding: '4px 10px',
+              borderRadius: '999px',
+              fontSize: '0.72rem',
+              fontWeight: 600,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'var(--color-carbon)',
+              marginBottom: '0.75rem'
+            }}
+          >
+            <Shield size={13} strokeWidth={1.5} color="var(--color-primary)" />
+            <span>ACCESO EXCLUSIVO ADMINISTRADOR</span>
+          </div>
+          <h1
+            className="font-serif"
+            style={{
+              fontSize: '1.85rem',
+              fontWeight: 600,
+              color: 'var(--color-carbon)',
+              margin: '0 0 0.4rem 0'
+            }}
+          >
+            Gestión Central Di Borde
           </h1>
-          <p style={{ fontSize: '0.86rem', color: 'var(--color-carbon-muted)', margin: 0 }}>
-            Administración central y panel personal de revendedores
+          <p
+            style={{
+              fontSize: '0.86rem',
+              color: 'var(--color-carbon-muted)',
+              margin: 0
+            }}
+          >
+            Panel operativo para Cristian: stock de insumos, compras, caja y vendedores.
           </p>
         </div>
 
@@ -53,7 +91,8 @@ export default function PortalLoginView() {
             borderRadius: '8px',
             padding: '2rem 1.75rem',
             border: '1px solid var(--color-border)',
-            marginBottom: '1.5rem'
+            boxShadow: '0 4px 20px -2px rgba(28, 25, 23, 0.05)',
+            marginBottom: '1.25rem'
           }}
         >
           {errorMsg && (
@@ -79,15 +118,33 @@ export default function PortalLoginView() {
 
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-carbon)', display: 'block', marginBottom: '6px' }}>
-                Usuario:
+              <label
+                style={{
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  color: 'var(--color-carbon)',
+                  display: 'block',
+                  marginBottom: '6px'
+                }}
+              >
+                Usuario Administrador:
               </label>
               <div style={{ position: 'relative' }}>
-                <User size={15} strokeWidth={1.5} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-carbon-subtle)' }} />
+                <User
+                  size={15}
+                  strokeWidth={1.5}
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--color-carbon-subtle)'
+                  }}
+                />
                 <input
                   type="text"
                   required
-                  placeholder="ej: lucas o admin"
+                  placeholder="admin"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   style={{
@@ -103,11 +160,29 @@ export default function PortalLoginView() {
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-carbon)', display: 'block', marginBottom: '6px' }}>
-                Contraseña:
+              <label
+                style={{
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  color: 'var(--color-carbon)',
+                  display: 'block',
+                  marginBottom: '6px'
+                }}
+              >
+                Contraseña / PIN:
               </label>
               <div style={{ position: 'relative' }}>
-                <Lock size={15} strokeWidth={1.5} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-carbon-subtle)' }} />
+                <Lock
+                  size={15}
+                  strokeWidth={1.5}
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--color-carbon-subtle)'
+                  }}
+                />
                 <input
                   type="password"
                   required
@@ -145,103 +220,60 @@ export default function PortalLoginView() {
                 transition: 'all var(--transition-fast)'
               }}
             >
-              <span>Ingresar al Panel</span>
+              <span>Ingresar al Panel de Cristian</span>
               <ArrowRight size={15} strokeWidth={1.5} />
             </button>
           </form>
-        </div>
 
-        {/* Acceso Rápido Demo (Sin emojis, minimalista) */}
-        <div
-          style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: '8px',
-            padding: '1.25rem',
-            border: '1px solid var(--color-border)'
-          }}
-        >
-          <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-carbon-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px', textAlign: 'center' }}>
-            Accesos de Prueba Rápida
+          <div style={{ margin: '1.25rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--color-border)' }} />
+            <span style={{ fontSize: '0.7rem', color: 'var(--color-carbon-subtle)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              o acceso directo
+            </span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--color-border)' }} />
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <button
-              type="button"
-              onClick={() => quickLoginAs('admin')}
-              style={{
-                backgroundColor: 'var(--color-cream)',
-                color: 'var(--color-carbon)',
-                border: '1px solid var(--color-border)',
-                borderRadius: '6px',
-                padding: '8px 12px',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                transition: 'all var(--transition-fast)'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', backgroundColor: 'var(--color-carbon)', color: '#fff', borderRadius: '4px' }}>ADM</span>
-                <span>Panel Administrador (Julián)</span>
-              </div>
-              <span style={{ fontSize: '0.74rem', color: 'var(--color-carbon-subtle)' }}>Ingresar →</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => quickLoginAs('reseller', 'rev-lucas')}
-              style={{
-                backgroundColor: 'var(--color-cream)',
-                color: 'var(--color-carbon)',
-                border: '1px solid var(--color-border)',
-                borderRadius: '6px',
-                padding: '8px 12px',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                transition: 'all var(--transition-fast)'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', backgroundColor: '#FEE2E2', color: '#DC2626', borderRadius: '4px' }}>LG</span>
-                <span>Revendedor: Lucas Gómez</span>
-              </div>
-              <span className="tabular-nums" style={{ fontSize: '0.74rem', color: '#DC2626', fontWeight: 600 }}>Deuda: -$7.500 →</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => quickLoginAs('reseller', 'rev-mateo')}
-              style={{
-                backgroundColor: 'var(--color-cream)',
-                color: 'var(--color-carbon)',
-                border: '1px solid var(--color-border)',
-                borderRadius: '6px',
-                padding: '8px 12px',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                transition: 'all var(--transition-fast)'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', backgroundColor: '#DCFCE7', color: '#15803D', borderRadius: '4px' }}>MR</span>
-                <span>Revendedor: Mateo Rivas</span>
-              </div>
-              <span style={{ fontSize: '0.74rem', color: '#15803D' }}>Al día →</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleQuickAdmin}
+            style={{
+              width: '100%',
+              backgroundColor: 'var(--color-cream)',
+              color: 'var(--color-carbon)',
+              border: '1px solid var(--color-border)',
+              borderRadius: '6px',
+              padding: '9px 12px',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all var(--transition-fast)'
+            }}
+          >
+            <Shield size={14} strokeWidth={1.5} color="var(--color-primary)" />
+            <span>Entrar como Administrador (Cristian)</span>
+          </button>
         </div>
 
+        <div style={{ textAlign: 'center' }}>
+          <a
+            href="#/"
+            style={{
+              fontSize: '0.82rem',
+              color: 'var(--color-carbon-muted)',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <ArrowLeft size={14} strokeWidth={1.5} />
+            <span>Volver a la tienda web Di Borde</span>
+          </a>
+        </div>
       </div>
     </div>
   );

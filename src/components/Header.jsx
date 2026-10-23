@@ -1,6 +1,6 @@
 import React from 'react';
 import { useCart, DI_BORDE_WHATSAPP_PHONE } from '../context/CartContext.jsx';
-import { MessageCircle, ShoppingBag } from 'lucide-react';
+import { MessageCircle, ShoppingBag, Shield } from 'lucide-react';
 
 export default function Header({ currentRoute, setCurrentRoute, onOpenOrderModal }) {
   const { itemCount, subtotal, setActiveChannel } = useCart();
@@ -128,6 +128,32 @@ export default function Header({ currentRoute, setCurrentRoute, onOpenOrderModal
 
         {/* Right Action: WhatsApp & Cart Trigger */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <a
+            href="#/admin"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/admin');
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.45rem 0.65rem',
+              borderRadius: '6px',
+              backgroundColor: 'transparent',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-carbon-muted)',
+              fontSize: '0.78rem',
+              fontWeight: 500,
+              textDecoration: 'none',
+              transition: 'all var(--transition-fast)'
+            }}
+            title="Panel de Gestión Administrativa"
+          >
+            <Shield size={13} strokeWidth={1.5} color="var(--color-carbon)" />
+            <span>Admin</span>
+          </a>
+
           <a
             href={`https://wa.me/${DI_BORDE_WHATSAPP_PHONE}?text=${encodeURIComponent('¡Hola Di Borde! Quisiera hacer una consulta o encargar un pedido.')}`}
             target="_blank"

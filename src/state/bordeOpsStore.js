@@ -1,147 +1,348 @@
-// Di Borde Operations Store (Stock, Revendedores, Asignaciones, Deudas y Pedidos)
-// Persistente en localStorage para tiempo real - Sin emojis
+// Di Borde Operations Store (Stock, Insumos, Compras, Ingresos/Egresos, Vendedores, Rendiciones y Sugerencias)
+// Persistente en localStorage para gestión administrativa en tiempo real
 
-const STORAGE_KEY = 'di_borde_ops_state_v2';
+const STORAGE_KEY = 'di_borde_admin_ops_v3';
 
 const INITIAL_STATE = {
-  // 1. Stock total del Obrador en Chimbas - San Juan en tiempo real
+  // 1. Stock de Materias Primas / Insumos para elaborar y últimos precios de compra
+  rawMaterials: [
+    {
+      id: 'mat-harina',
+      name: 'Harina 000 Graciela',
+      unit: 'kg',
+      currentStock: 45,
+      minStockAlert: 15,
+      lastPurchasePrice: 803.38,
+      lastPurchasePack: 'Pack x10 kg ($8.033,79)',
+      lastPurchaseDate: '21/10/2026',
+      supplier: 'Distribuidora Graciela'
+    },
+    {
+      id: 'mat-queso',
+      name: 'Queso Cremoso San Juan',
+      unit: 'kg',
+      currentStock: 14.5,
+      minStockAlert: 5,
+      lastPurchasePrice: 6200,
+      lastPurchasePack: 'Horma 3,95 kg ($24.521)',
+      lastPurchaseDate: '22/10/2026',
+      supplier: 'Lácteos San Juan'
+    },
+    {
+      id: 'mat-salsa',
+      name: 'Salsa Realeza (Sachet)',
+      unit: 'sachets',
+      currentStock: 22,
+      minStockAlert: 8,
+      lastPurchasePrice: 1438,
+      lastPurchasePack: 'Caja x12 sachets ($17.256)',
+      lastPurchaseDate: '20/10/2026',
+      supplier: 'Mayorista Alimentos'
+    },
+    {
+      id: 'mat-bolsas',
+      name: 'Bolsas Pre-pizzas',
+      unit: 'bolsas',
+      currentStock: 280,
+      minStockAlert: 100,
+      lastPurchasePrice: 91,
+      lastPurchasePack: 'Pack x100 unidades ($9.100)',
+      lastPurchaseDate: '19/10/2026',
+      supplier: 'Papelera San Juan'
+    },
+    {
+      id: 'mat-aceite',
+      name: 'Aceite Girasol Legítimo',
+      unit: 'botellas 900ml',
+      currentStock: 6,
+      minStockAlert: 2,
+      lastPurchasePrice: 3300,
+      lastPurchasePack: 'Caja x6 unidades ($19.800)',
+      lastPurchaseDate: '18/10/2026',
+      supplier: 'Distribuidora Centro'
+    },
+    {
+      id: 'mat-levadura',
+      name: 'Levadura',
+      unit: 'paquetes 500g',
+      currentStock: 5,
+      minStockAlert: 2,
+      lastPurchasePrice: 2850,
+      lastPurchasePack: 'Pack x4 ($11.400)',
+      lastPurchaseDate: '15/10/2026',
+      supplier: 'Distribuidora Panadería'
+    }
+  ],
+
+  // 2. Historial de compras de insumos
+  purchases: [
+    {
+      id: 'PUR-101',
+      date: '22/10/2026',
+      materialId: 'mat-queso',
+      materialName: 'Queso Cremoso San Juan',
+      quantity: 11.85,
+      unit: 'kg',
+      unitPrice: 6200,
+      totalAmount: 73470,
+      supplier: 'Lácteos San Juan',
+      notes: '3 hormas cerradas para producción de fin de semana'
+    },
+    {
+      id: 'PUR-102',
+      date: '21/10/2026',
+      materialId: 'mat-harina',
+      materialName: 'Harina 000 Graciela',
+      quantity: 50,
+      unit: 'kg',
+      unitPrice: 803.38,
+      totalAmount: 40169,
+      supplier: 'Distribuidora Graciela',
+      notes: '5 packs de 10kg'
+    },
+    {
+      id: 'PUR-103',
+      date: '19/10/2026',
+      materialId: 'mat-bolsas',
+      materialName: 'Bolsas Pre-pizzas',
+      quantity: 200,
+      unit: 'bolsas',
+      unitPrice: 91,
+      totalAmount: 18200,
+      supplier: 'Papelera San Juan',
+      notes: '2 packs de 100 bolsas'
+    }
+  ],
+
+  // 3. Stock de productos terminados en obrador
   stock: {
-    'pizzeta-con-queso': 140,            // Unidades individuales
-    'paquete-10-prepizzetas': 52,        // Paquetes cerrados x10
-    'paquete-2-prepizzas-grandes': 34    // Paquetes x2 pre-pizzas grandes
+    'pizzeta-con-queso': 120,            // 50g con queso cremoso
+    'paquete-10-prepizzetas': 48,        // Paquetes x10 sin queso
+    'paquete-2-prepizzas-grandes': 32    // Paquetes x2 grandes (400g c/u)
   },
 
-  // 2. Revendedores registrados (Chicos de calle y vendedores independientes)
+  // 4. Registro de Ingresos y Egresos (Flujo de Caja del Negocio)
+  cashflow: [
+    {
+      id: 'CF-001',
+      date: '23/10/2026',
+      type: 'ingreso',
+      category: 'Rendición Vendedor',
+      concept: 'Rendición Mateo Rivas (Turno Mañana)',
+      amount: 12000,
+      reference: 'Mateo Rivas'
+    },
+    {
+      id: 'CF-002',
+      date: '23/10/2026',
+      type: 'ingreso',
+      category: 'Venta Mayorista',
+      concept: 'Cobro pedido Café San Juan (6x paq x10)',
+      amount: 14000,
+      reference: 'PED-201'
+    },
+    {
+      id: 'CF-003',
+      date: '22/10/2026',
+      type: 'egreso',
+      category: 'Compra Insumos',
+      concept: 'Compra Queso Cremoso (3 hormas Lácteos San Juan)',
+      amount: 73470,
+      reference: 'PUR-101'
+    },
+    {
+      id: 'CF-004',
+      date: '22/10/2026',
+      type: 'ingreso',
+      category: 'Venta al Paso',
+      concept: 'Venta directa en obrador (Pizzetas y packs familiares)',
+      amount: 18500,
+      reference: 'Venta Obrador'
+    },
+    {
+      id: 'CF-005',
+      date: '21/10/2026',
+      type: 'egreso',
+      category: 'Servicios / Gas',
+      concept: 'Recarga garrafa gas obrador',
+      amount: 16500,
+      reference: 'Gas Chimbas'
+    }
+  ],
+
+  // 5. Vendedores / Revendedores registrados
   resellers: [
     {
       id: 'rev-lucas',
-      username: 'lucas',
-      password: '123',
       name: 'Lucas Gómez',
-      phone: '2645123456',
-      zone: 'Chimbas / Centro',
+      phone: '264 512-3456',
+      zone: 'Chimbas Centro / Plaza',
       initials: 'LG',
-      // Mercadería que se llevó hoy
-      activeAssignment: {
-        date: 'Hoy (Turno Tarde)',
-        pizzetasQueso: 10,       // PVP $800 ($8.000) · Rendición $400 ($4.000)
+      status: 'activo',
+      // Mercadería en calle hoy
+      assigned: {
+        pizzetasQueso: 15,       // PVP $800 ($12.000) · Rendición $400 ($6.000)
         paquetes10: 4,          // PVP $2.500 ($10.000) · Rendición $2.000 ($8.000)
         paquetesGrandes: 2,     // PVP $2.500 ($5.000) · Rendición $1.800 ($3.600)
-        totalPvp: 23000,
-        totalRendicion: 15600,
-        gananciaChico: 7400,
-        rendicionPagada: 0,
-        status: 'pending' // 'pending' | 'paid' | 'partial'
+        totalPvp: 27000,
+        totalRendicion: 17600,
+        gananciaVendedor: 9400,
+        rendicionCobrada: 0,
+        renditionStatus: 'debe_rendir', // 'debe_rendir' | 'al_dia' | 'parcial'
+        assignedDate: 'Hoy 11:30 hs'
       },
-      // Saldo en rojo / Deuda pendiente (Caso requerido: se comió la mercadería $7.500)
       debtAmount: 7500,
       debtReason: 'Mercadería consumida en la jornada anterior sin rendir',
       debtDate: '21/10/2026'
     },
     {
       id: 'rev-mateo',
-      username: 'mateo',
-      password: '123',
       name: 'Mateo Rivas',
-      phone: '2645889911',
+      phone: '264 588-9911',
       zone: 'Chimbas Norte',
       initials: 'MR',
-      activeAssignment: {
-        date: 'Hoy (Turno Mañana)',
+      status: 'activo',
+      assigned: {
         pizzetasQueso: 15,
         paquetes10: 3,
         paquetesGrandes: 0,
         totalPvp: 19500,
         totalRendicion: 12000,
-        gananciaChico: 7500,
-        rendicionPagada: 12000,
-        status: 'paid'
+        gananciaVendedor: 7500,
+        rendicionCobrada: 12000,
+        renditionStatus: 'al_dia',
+        assignedDate: 'Hoy 09:00 hs'
       },
-      debtAmount: 0, // Al día, sin deuda
+      debtAmount: 0,
       debtReason: null,
       debtDate: null
     },
     {
       id: 'rev-joaquin',
-      username: 'joaquin',
-      password: '123',
       name: 'Joaquín Pereyra',
-      phone: '2645774422',
+      phone: '264 577-4422',
       zone: 'Almacenes y Kioscos San Juan',
       initials: 'JP',
-      activeAssignment: {
-        date: 'Hoy (Turno Tarde)',
-        pizzetasQueso: 6,
-        paquetes10: 6,
+      status: 'activo',
+      assigned: {
+        pizzetasQueso: 8,
+        paquetes10: 5,
         paquetesGrandes: 3,
-        totalPvp: 27300,
-        totalRendicion: 19800,
-        gananciaChico: 7500,
-        rendicionPagada: 10000,
-        status: 'partial'
+        totalPvp: 26400,
+        totalRendicion: 18600,
+        gananciaVendedor: 7800,
+        rendicionCobrada: 10000,
+        renditionStatus: 'parcial',
+        assignedDate: 'Hoy 14:00 hs'
       },
-      debtAmount: 9800,
-      debtReason: 'Saldo restante de rendición de hoy',
-      debtDate: '21/10/2026'
+      debtAmount: 8600,
+      debtReason: 'Rendición parcial de turno tarde',
+      debtDate: '22/10/2026'
     }
   ],
 
-  // 3. Pedidos del Obrador creados por el Administrador
+  // 6. Reportes de Venta y Sugerencias de los Vendedores
+  resellerNotes: [
+    {
+      id: 'NOTE-301',
+      resellerId: 'rev-lucas',
+      resellerName: 'Lucas Gómez',
+      date: 'Hoy 15:20',
+      type: 'sugerencia',
+      content: 'Los clientes en la plaza me preguntan si podemos tener una variedad con orégano o aceitunas en las pizzetas individuales.',
+      status: 'pendiente_accion'
+    },
+    {
+      id: 'NOTE-302',
+      resellerId: 'rev-mateo',
+      resellerName: 'Mateo Rivas',
+      date: 'Hoy 12:45',
+      type: 'venta',
+      content: 'En Chimbas Norte vendí las 15 pizzetas en menos de dos horas. Para mañana necesitaría salir con 25 pizzetas y 6 paquetes x10.',
+      status: 'leido'
+    },
+    {
+      id: 'NOTE-303',
+      resellerId: 'rev-joaquin',
+      resellerName: 'Joaquín Pereyra',
+      date: 'Ayer 18:30',
+      type: 'pedido_cliente',
+      content: 'El almacén San Cayetano de calle Mendoza quiere coordinar 10 paquetes de pre-pizzetas x10 para todos los viernes por la mañana.',
+      status: 'pendiente_accion'
+    }
+  ],
+
+  // 7. Pedidos de clientes y comercios
   orders: [
     {
       id: 'PED-201',
       customerName: 'Café San Juan',
-      phone: '2645443322',
+      phone: '264 544-3322',
       address: 'Rivadavia 142 Este',
-      itemsSummary: '6x Paquete x10 Pre-pizzetas',
+      itemsSummary: '6x Paquete x10 Pre-pizzetas ($2.333 c/u)',
       total: 14000,
-      status: 'entregado',
+      status: 'entregado_cobrado', // 'pendiente' | 'en_elaboracion' | 'en_reparto' | 'entregado_cobrado'
       date: 'Hoy 16:45',
-      deliveryType: 'delivery'
+      deliveryType: 'delivery',
+      paymentMethod: 'Transferencia bancaria'
     },
     {
       id: 'PED-202',
       customerName: 'Kiosco El Sol (Chimbas)',
-      phone: '2645667788',
+      phone: '264 566-7788',
       address: 'Mendoza 840 Sur',
-      itemsSummary: '4x Paquete x10 + 3x Paquete Grandes',
-      total: 15333,
-      status: 'en_camino',
+      itemsSummary: '3x Paquete x10 ($7.000) + 3x Paquete x2 Grandes ($6.000)',
+      total: 13000,
+      status: 'en_reparto',
       date: 'Hoy 19:15',
-      deliveryType: 'delivery'
+      deliveryType: 'delivery',
+      paymentMethod: 'Efectivo al recibir'
     },
     {
       id: 'PED-203',
       customerName: 'Mariela Quiroga',
-      phone: '2645331122',
-      address: 'Retira por Obrador (Chimbas)',
-      itemsSummary: '2x Paquete x2 Pre-pizzas Grandes',
+      phone: '264 533-1122',
+      address: 'Retiro en Obrador (Chimbas)',
+      itemsSummary: '2x Paquete x2 Pre-pizzas Grandes (400g c/u)',
       total: 5000,
-      status: 'pendiente',
+      status: 'en_elaboracion',
       date: 'Hoy 20:30',
-      deliveryType: 'pickup'
+      deliveryType: 'pickup',
+      paymentMethod: 'Efectivo en mano'
+    },
+    {
+      id: 'PED-204',
+      customerName: 'Bar Las Palmeras',
+      phone: '264 599-0011',
+      address: 'Salta 310 Norte, Chimbas',
+      itemsSummary: '10x Paquete x10 Pre-pizzetas (Super Mayorista $20.000)',
+      total: 20000,
+      status: 'pendiente',
+      date: 'Hoy 21:00',
+      deliveryType: 'delivery',
+      paymentMethod: 'A convenir'
     }
   ]
 };
 
 // Cargar o inicializar estado desde localStorage
-export function loadOpsState() {
+export function loadAdminOpsState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed.stock && parsed.resellers) {
+      if (parsed.rawMaterials && parsed.resellers && parsed.cashflow) {
         return parsed;
       }
     }
   } catch (e) {
     console.warn('Ops state load failed, initializing default', e);
   }
-  saveOpsState(INITIAL_STATE);
+  saveAdminOpsState(INITIAL_STATE);
   return INITIAL_STATE;
 }
 
-export function saveOpsState(state) {
+export function saveAdminOpsState(state) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (e) {
@@ -149,8 +350,8 @@ export function saveOpsState(state) {
   }
 }
 
-// Helper para calcular la rendición y el PVP de una asignación
-export function calculateAssignmentTotals(pizzetasQueso = 0, paquetes10 = 0, paquetesGrandes = 0) {
+// Helper para calcular la rendición oficial de una asignación
+export function calculateResellerAssignment(pizzetasQueso = 0, paquetes10 = 0, paquetesGrandes = 0) {
   const pvp = (pizzetasQueso * 800) + (paquetes10 * 2500) + (paquetesGrandes * 2500);
   const rendicion = (pizzetasQueso * 400) + (paquetes10 * 2000) + (paquetesGrandes * 1800);
   const ganancia = pvp - rendicion;
@@ -158,6 +359,6 @@ export function calculateAssignmentTotals(pizzetasQueso = 0, paquetes10 = 0, paq
   return {
     totalPvp: pvp,
     totalRendicion: rendicion,
-    gananciaChico: ganancia
+    gananciaVendedor: ganancia
   };
 }
