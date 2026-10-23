@@ -4,6 +4,19 @@ import {
   saveAdminOpsState,
   calculateResellerAssignment
 } from '../state/bordeOpsStore.js';
+import {
+  supabase,
+  signInWithGoogle,
+  signOutSupabase,
+  fetchAllDataFromSupabase,
+  dbUpsertRawMaterial,
+  dbInsertCashflow,
+  dbInsertResellerNote,
+  dbUpdateResellerNoteStatus,
+  dbUpsertReseller,
+  dbInsertOrder,
+  dbUpdateOrderStatus
+} from '../lib/supabase.js';
 
 const AuthContext = createContext(null);
 const AUTH_STORAGE_KEY = 'di_borde_auth_user_v2';
@@ -30,6 +43,47 @@ export function AuthProvider({ children }) {
       localStorage.removeItem(AUTH_STORAGE_KEY);
     }
   }, [currentUser]);
+
+  // Sincronizar datos iniciales desde Supabase y escuchar Google Auth
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchAllDataFromSupabase().then((remoteData) => {
+      if (isMounted && remoteData) {
+        setOpsState((prev) => {
+          const merged = {
+            ...prev,
+            rawMaterials: remoteData.rawMaterials?.length ? remoteData.rawMaterials : prev.rawMaterials,
+            stock: remoteData.stock || prev.stock,
+            resellers: remoteData.resellers?.length ? remoteData.resellers : prev.resellers,
+            resellerNotes: remoteData.resellerNotes?.length ? remoteData.resellerNotes : prev.resellerNotes,
+            cashflow: remoteData.cashflow?.length ? remoteData.cashflow : prev.cashflow,
+            orders: remoteData.orders?.length ? remoteData.orders : prev.orders
+          };
+          saveAdminOpsState(merged);
+          return merged;
+        });
+      }
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        const email = session.user.email || '';
+        const name = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuario';
+        const loggedUser = {
+          role: 'admin',
+          username: email,
+          name: `${name} (Google Auth)`
+        };
+        setCurrentUser(loggedUser);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
 
   // Actualizar opsState y persistir
   const updateOpsState = (updater) => {
@@ -546,7 +600,8 @@ export function AuthProvider({ children }) {
         toggleResellerNoteStatus,
         createOrder,
         updateOrderStatus,
-        addProductionStock
+        addProductionStock,
+        signInWithGoogle
       }}
     >
       {children}
