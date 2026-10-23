@@ -69,7 +69,7 @@ export default function OrderModal({ isOpen, onClose }) {
           backgroundColor: '#FFFFFF',
           borderRadius: '10px',
           border: '1px solid var(--color-border)',
-          padding: '1.75rem',
+          padding: 'clamp(1.1rem, 3.5vw, 1.75rem)',
           boxShadow: '0 20px 48px rgba(28, 25, 23, 0.16)',
           overflowY: 'auto',
           position: 'relative',

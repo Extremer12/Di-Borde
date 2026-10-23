@@ -811,7 +811,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Grid de Insumos / Materias Primas */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
               {opsState.rawMaterials.map((mat) => {
                 const isLow = mat.currentStock <= mat.minStockAlert;
                 return (
@@ -976,34 +976,36 @@ export default function AdminDashboard() {
               <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--color-border)', fontWeight: 600, fontSize: '0.92rem' }}>
                 Historial de Compras de Materias Primas
               </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
-                <thead>
-                  <tr style={{ backgroundColor: 'var(--color-cream-light)', borderBottom: '1px solid var(--color-border)', color: 'var(--color-carbon-muted)' }}>
-                    <th style={{ padding: '0.7rem 1rem' }}>Fecha</th>
-                    <th style={{ padding: '0.7rem 1rem' }}>Insumo</th>
-                    <th style={{ padding: '0.7rem 1rem' }}>Cantidad</th>
-                    <th style={{ padding: '0.7rem 1rem' }}>Precio Unitario</th>
-                    <th style={{ padding: '0.7rem 1rem', textAlign: 'right' }}>Total Pagado</th>
-                    <th style={{ padding: '0.7rem 1rem' }}>Proveedor / Notas</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {opsState.purchases.map((p) => (
-                    <tr key={p.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                      <td style={{ padding: '0.7rem 1rem', color: 'var(--color-carbon-muted)' }}>{p.date}</td>
-                      <td style={{ padding: '0.7rem 1rem', fontWeight: 600 }}>{p.materialName}</td>
-                      <td className="tabular-nums" style={{ padding: '0.7rem 1rem' }}>{p.quantity} {p.unit}</td>
-                      <td className="tabular-nums" style={{ padding: '0.7rem 1rem' }}>${p.unitPrice.toLocaleString('es-AR')}</td>
-                      <td className="tabular-nums" style={{ padding: '0.7rem 1rem', textAlign: 'right', fontWeight: 600, color: '#DC2626' }}>
-                        -${p.totalAmount.toLocaleString('es-AR')}
-                      </td>
-                      <td style={{ padding: '0.7rem 1rem', color: 'var(--color-carbon-muted)' }}>
-                        {p.supplier} {p.notes ? `(${p.notes})` : ''}
-                      </td>
+              <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: 'var(--color-cream-light)', borderBottom: '1px solid var(--color-border)', color: 'var(--color-carbon-muted)' }}>
+                      <th style={{ padding: '0.7rem 1rem' }}>Fecha</th>
+                      <th style={{ padding: '0.7rem 1rem' }}>Insumo</th>
+                      <th style={{ padding: '0.7rem 1rem' }}>Cantidad</th>
+                      <th style={{ padding: '0.7rem 1rem' }}>Precio Unitario</th>
+                      <th style={{ padding: '0.7rem 1rem', textAlign: 'right' }}>Total Pagado</th>
+                      <th style={{ padding: '0.7rem 1rem' }}>Proveedor / Notas</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {opsState.purchases.map((p) => (
+                      <tr key={p.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                        <td style={{ padding: '0.7rem 1rem', color: 'var(--color-carbon-muted)' }}>{p.date}</td>
+                        <td style={{ padding: '0.7rem 1rem', fontWeight: 600 }}>{p.materialName}</td>
+                        <td className="tabular-nums" style={{ padding: '0.7rem 1rem' }}>{p.quantity} {p.unit}</td>
+                        <td className="tabular-nums" style={{ padding: '0.7rem 1rem' }}>${p.unitPrice.toLocaleString('es-AR')}</td>
+                        <td className="tabular-nums" style={{ padding: '0.7rem 1rem', textAlign: 'right', fontWeight: 600, color: '#DC2626' }}>
+                          -${p.totalAmount.toLocaleString('es-AR')}
+                        </td>
+                        <td style={{ padding: '0.7rem 1rem', color: 'var(--color-carbon-muted)' }}>
+                          {p.supplier} {p.notes ? `(${p.notes})` : ''}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}

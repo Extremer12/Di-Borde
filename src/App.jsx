@@ -6,6 +6,7 @@ import Footer from './components/Footer.jsx';
 import FloatingCartBar from './components/FloatingCartBar.jsx';
 import OrderModal from './components/OrderModal.jsx';
 import Toast from './components/Toast.jsx';
+import InstallPwaPrompt from './components/InstallPwaPrompt.jsx';
 
 // Public Views
 import HomeView from './views/HomeView.jsx';
@@ -149,6 +150,9 @@ function MainLayout() {
 
       {/* Global Toast */}
       <Toast />
+
+      {/* PWA Native Installation Prompt */}
+      <InstallPwaPrompt />
     </div>
   );
 }

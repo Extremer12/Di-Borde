@@ -1,0 +1,95 @@
+{
+  "id": "/?source=pwa",
+  "name": "Di Borde | Pizzas y Prepizzas Artesanales",
+  "short_name": "Di Borde",
+  "description": "Pizzas, pizzetas con queso cremoso y prepizzas artesanales de masa crujiente. Tienda oficial, pedidos directos y portal comercial.",
+  "start_url": "/#/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#1C1917",
+  "theme_color": "#C83820",
+  "orientation": "portrait-primary",
+  "lang": "es-AR",
+  "dir": "ltr",
+  "categories": [
+    "food",
+    "shopping",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Menú y Pedidos",
+      "short_name": "Menú",
+      "description": "Ver lista de precios y pedir online",
+      "url": "/#/",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Catálogo Oficial",
+      "short_name": "Catálogo",
+      "description": "Pizzetas individuales y pre-pizzas",
+      "url": "/#/catalogo",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Portal Comercial",
+      "short_name": "Vendedores",
+      "description": "Acceso a ventas y rendición de Di Borde",
+      "url": "/#/portal",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

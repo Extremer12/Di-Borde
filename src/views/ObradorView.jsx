@@ -28,7 +28,7 @@ export default function ObradorView() {
         </div>
 
         {/* Info Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.75rem', marginBottom: '3.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.75rem', marginBottom: '3.5rem' }}>
           {/* Card 1: Dirección y Retiro */}
           <div
             style={{

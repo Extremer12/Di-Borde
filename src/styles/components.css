@@ -57,6 +57,36 @@
   object-fit: contain;
 }
 
+/* Responsive Header Navigation */
+.header-desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.header-mobile-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 6px;
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-carbon);
+  cursor: pointer;
+  min-height: 40px;
+  min-width: 40px;
+}
+
+@media (max-width: 768px) {
+  .header-desktop-nav {
+    display: none !important;
+  }
+  .header-mobile-toggle {
+    display: flex !important;
+  }
+}
+
 .header-nav {
   display: flex;
   align-items: center;

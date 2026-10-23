@@ -257,7 +257,7 @@ export default function ResellerDashboard() {
                 1. Datos Personales y de Contacto
               </h3>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '0.85rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>
                     Correo Google (Habilitado):

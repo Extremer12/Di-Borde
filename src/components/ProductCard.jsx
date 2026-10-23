@@ -211,17 +211,18 @@ export default function ProductCard({ product }) {
                 color: '#FAF8F5',
                 border: 'none',
                 borderRadius: '6px',
-                padding: '0.55rem 1rem',
-                fontSize: '0.82rem',
+                padding: '0.65rem 1.15rem',
+                fontSize: '0.84rem',
                 fontWeight: 600,
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '5px',
+                gap: '6px',
                 cursor: 'pointer',
+                minHeight: '38px',
                 transition: 'all var(--transition-fast)'
               }}
             >
-              <Plus size={14} strokeWidth={1.5} />
+              <Plus size={15} strokeWidth={1.5} />
               <span>Agregar</span>
             </button>
           ) : (
@@ -232,15 +233,15 @@ export default function ProductCard({ product }) {
                 border: '1px solid var(--color-border)',
                 backgroundColor: '#FFFFFF',
                 borderRadius: '6px',
-                padding: '2px'
+                padding: '3px'
               }}
             >
               <button
                 type="button"
                 onClick={handleDecrement}
                 style={{
-                  width: '28px',
-                  height: '28px',
+                  width: '34px',
+                  height: '34px',
                   borderRadius: '4px',
                   backgroundColor: 'transparent',
                   color: 'var(--color-carbon)',
@@ -252,15 +253,15 @@ export default function ProductCard({ product }) {
                 }}
                 aria-label="Restar 1"
               >
-                <Minus size={13} strokeWidth={1.5} />
+                <Minus size={14} strokeWidth={1.5} />
               </button>
 
               <span
                 className="tabular-nums"
                 style={{
-                  minWidth: '30px',
+                  minWidth: '32px',
                   textAlign: 'center',
-                  fontSize: '0.86rem',
+                  fontSize: '0.9rem',
                   fontWeight: 600,
                   color: 'var(--color-carbon)'
                 }}
@@ -272,8 +273,8 @@ export default function ProductCard({ product }) {
                 type="button"
                 onClick={handleIncrement}
                 style={{
-                  width: '28px',
-                  height: '28px',
+                  width: '34px',
+                  height: '34px',
                   borderRadius: '4px',
                   backgroundColor: 'var(--color-carbon)',
                   color: '#FAF8F5',
@@ -285,7 +286,7 @@ export default function ProductCard({ product }) {
                 }}
                 aria-label="Sumar 1"
               >
-                <Plus size={13} strokeWidth={1.5} />
+                <Plus size={14} strokeWidth={1.5} />
               </button>
             </div>
           )}
