@@ -57,7 +57,7 @@ export default function AdminDashboard() {
   const isAuthorizedAdmin =
     currentUser &&
     currentUser.role === 'admin' &&
-    currentUser.email?.toLowerCase() === (ADMIN_EMAIL || 'cristianbordon186@gmail.com').toLowerCase();
+    currentUser.email?.toLowerCase() === ADMIN_EMAIL?.toLowerCase();
 
   const [activeTab, setActiveTab] = useState('caja'); // 'caja' | 'insumos' | 'vendedores' | 'sugerencias' | 'pedidos'
 
@@ -316,7 +316,7 @@ export default function AdminDashboard() {
     setAdjustMaterialModal(null);
   };
 
-  // Si no es el administrador autorizado (cristianbordon186@gmail.com), denegar acceso
+  // Si no es el administrador autorizado, denegar acceso
   if (!isAuthorizedAdmin) {
     return (
       <div style={{ backgroundColor: 'var(--color-cream)', minHeight: '85vh', padding: '3.5rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -327,12 +327,9 @@ export default function AdminDashboard() {
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.45rem', color: '#991B1B', margin: '0 0 0.5rem 0' }}>
             Acceso Administrativo Exclusivo
           </h2>
-          <p style={{ fontSize: '0.86rem', color: '#7F1D1D', margin: '0 0 1rem 0', lineHeight: 1.5 }}>
-            Este panel contiene compras de insumos, caja y control de vendedores de Di Borde. Por política de seguridad, el único correo con permisos de acceso como administrador es:
+          <p style={{ fontSize: '0.86rem', color: '#7F1D1D', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
+            Este panel contiene compras de insumos, flujo de caja y control operativo de <strong>DiBorde</strong>. El acceso está reservado exclusivamente para la administración central autorizada.
           </p>
-          <div style={{ display: 'inline-block', backgroundColor: 'var(--color-cream-light)', padding: '6px 14px', borderRadius: '6px', border: '1px solid var(--color-border)', fontSize: '0.84rem', fontWeight: 700, color: 'var(--color-carbon)', marginBottom: '1.25rem' }}>
-            {ADMIN_EMAIL || 'cristianbordon186@gmail.com'}
-          </div>
 
           {currentUser ? (
             <div style={{ fontSize: '0.78rem', color: '#991B1B', backgroundColor: '#FEF2F2', padding: '8px 12px', borderRadius: '6px', marginBottom: '1.25rem', border: '1px dashed #FCA5A5' }}>
@@ -340,7 +337,7 @@ export default function AdminDashboard() {
             </div>
           ) : (
             <div style={{ fontSize: '0.78rem', color: 'var(--color-carbon-muted)', marginBottom: '1.25rem' }}>
-              Debes identificarte con la cuenta de Google de Cristian para continuar.
+              Debes iniciar sesión con una cuenta de Google autorizada por DiBorde.
             </div>
           )}
 
@@ -364,7 +361,7 @@ export default function AdminDashboard() {
                 gap: '8px'
               }}
             >
-              <span>Ingresar con Google ({ADMIN_EMAIL})</span>
+              <span>Ingresar con Cuenta Administrador</span>
               <ArrowRight size={15} strokeWidth={1.5} />
             </button>
 

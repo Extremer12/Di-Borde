@@ -19,7 +19,7 @@ import {
   dbUpdateOrderStatus
 } from '../lib/supabase.js';
 
-export const ADMIN_EMAIL = 'cristianbordon186@gmail.com';
+export const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'cristianbordon186@gmail.com';
 
 const AuthContext = createContext(null);
 const AUTH_STORAGE_KEY = 'di_borde_auth_user_v3';
@@ -34,7 +34,7 @@ export function resolveUserRole(email, resellers = []) {
     return {
       role: 'admin',
       email: cleanEmail,
-      name: 'Cristian Bordón (Administrador Central)',
+      name: 'Administración DiBorde',
       isAdmin: true
     };
   }
@@ -178,7 +178,7 @@ export function AuthProvider({ children }) {
     setCurrentUser({
       role: 'admin',
       email: ADMIN_EMAIL,
-      name: 'Cristian Bordón (Administrador Central)',
+      name: 'Administración DiBorde',
       isAdmin: true
     });
   };

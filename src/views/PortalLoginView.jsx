@@ -15,7 +15,7 @@ import {
 import { DI_BORDE_WHATSAPP_PHONE } from '../context/CartContext.jsx';
 
 export default function PortalLoginView() {
-  const { currentUser, logout, signInWithGoogle, ADMIN_EMAIL } = useAuth();
+  const { currentUser, logout, signInWithGoogle } = useAuth();
   const [loadingGoogle, setLoadingGoogle] = useState(false);
 
   // Si ya es admin verificado, mostrar dashboard de administración
@@ -156,14 +156,14 @@ export default function PortalLoginView() {
                     border: '1px dashed #FCA5A5'
                   }}
                 >
-                  Por control de stock y fondos, solo las cuentas habilitadas por Cristian Bordón tienen acceso a los paneles.
+                  Por control de stock y fondos, solo las cuentas habilitadas por la administración de DiBorde tienen acceso a los paneles.
                 </div>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                 <a
                   href={`https://wa.me/${DI_BORDE_WHATSAPP_PHONE}?text=${encodeURIComponent(
-                    `Hola Cristian, acabo de intentar ingresar al portal de Di Borde con mi correo de Google: ${currentUser.email}. ¿Podrías darme de alta como vendedor?`
+                    `Hola DiBorde, acabo de intentar ingresar al portal de vendedores con mi correo de Google: ${currentUser.email}. ¿Podrían habilitar mi cuenta?`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -182,7 +182,7 @@ export default function PortalLoginView() {
                   }}
                 >
                   <MessageCircle size={15} strokeWidth={1.5} />
-                  <span>Pedir autorización a Cristian por WhatsApp</span>
+                  <span>Contactar a DiBorde por WhatsApp</span>
                 </a>
 
                 <button
@@ -227,7 +227,7 @@ export default function PortalLoginView() {
                   Cuenta en pausa
                 </h3>
                 <p style={{ fontSize: '0.82rem', color: '#B45309', margin: 0 }}>
-                  Tu usuario (<strong>{currentUser.name}</strong>) figura como inactivo en la administración. Contacta a Cristian para coordinar tus próximas salidas.
+                  Tu usuario (<strong>{currentUser.name}</strong>) figura como inactivo en el sistema. Contacta a la administración de DiBorde para coordinar tus próximas salidas.
                 </p>
               </div>
               <button
@@ -335,23 +335,14 @@ export default function PortalLoginView() {
                   borderRadius: '6px',
                   border: '1px solid var(--color-border)',
                   padding: '1rem',
-                  fontSize: '0.8rem',
-                  color: 'var(--color-carbon)',
-                  lineHeight: 1.5,
-                  marginBottom: '1.5rem'
+                  fontSize: '0.82rem',
+                  color: 'var(--color-carbon-muted)',
+                  textAlign: 'center',
+                  marginBottom: '1.5rem',
+                  lineHeight: 1.5
                 }}
               >
-                <div style={{ fontWeight: 600, color: 'var(--color-carbon)', marginBottom: '4px' }}>
-                  Políticas de Acceso Di Borde:
-                </div>
-                <ul style={{ margin: 0, paddingLeft: '1.15rem', color: 'var(--color-carbon-muted)' }}>
-                  <li>
-                    <strong>Administrador Central:</strong> Acceso exclusivo para <code>{ADMIN_EMAIL}</code> (control total de caja, compras, pedidos y vendedores).
-                  </li>
-                  <li style={{ marginTop: '4px' }}>
-                    <strong>Vendedores de Calle:</strong> Solo podrán acceder con el correo de Google que Cristian haya registrado en la nómina.
-                  </li>
-                </ul>
+                Acceso exclusivo para la administración y el equipo comercial autorizado de <strong>DiBorde</strong>.
               </div>
 
               <button

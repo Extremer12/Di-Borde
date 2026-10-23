@@ -60,7 +60,7 @@ export default function ResellerDashboard() {
             Portal de Vendedores Di Borde
           </h2>
           <p style={{ fontSize: '0.84rem', color: 'var(--color-carbon-muted)', margin: '0 0 1.5rem 0', lineHeight: 1.45 }}>
-            Debes iniciar sesión con tu cuenta de Google autorizada por Cristian para acceder a tu stock asignado, rendición y comisiones.
+            Debes iniciar sesión con tu cuenta de Google autorizada para acceder a tu stock asignado, rendición y comisiones en DiBorde.
           </p>
 
           <button
@@ -122,7 +122,7 @@ export default function ResellerDashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
             <a
               href={`https://wa.me/${DI_BORDE_WHATSAPP_PHONE}?text=${encodeURIComponent(
-                `Hola Cristian, quiero registrarme como vendedor en Di Borde. Mi correo de Google es: ${currentUser.email}`
+                `Hola DiBorde, quiero registrarme como vendedor oficial. Mi correo de Google es: ${currentUser.email}`
               )}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -141,7 +141,7 @@ export default function ResellerDashboard() {
               }}
             >
               <MessageCircle size={15} strokeWidth={1.5} />
-              <span>Solicitar alta a Cristian por WhatsApp</span>
+              <span>Solicitar alta a DiBorde por WhatsApp</span>
             </a>
 
             <button
@@ -486,7 +486,7 @@ export default function ResellerDashboard() {
       msg += `\nSaldo pendiente anterior registrado: $${activeReseller.debtAmount.toLocaleString('es-AR')}\n`;
     }
 
-    msg += `\nHola Cristian, te paso mi reporte para coordinar en el obrador.`;
+    msg += `\nHola DiBorde, les paso mi reporte para coordinar en el obrador.`;
 
     const encoded = encodeURIComponent(msg);
     window.open(`https://wa.me/${DI_BORDE_WHATSAPP_PHONE}?text=${encoded}`, '_blank');
@@ -587,11 +587,11 @@ export default function ResellerDashboard() {
             </div>
           </div>
 
-          {/* Selector de vendedor SOLO visible para el Administrador Cristian */}
+          {/* Selector de vendedor SOLO visible para el Administrador DiBorde */}
           {currentUser.role === 'admin' ? (
             <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
               <span style={{ fontSize: '0.72rem', color: '#FCD34D', fontWeight: 600 }}>
-                Modo Administrador (Cristian): Previsualizar vendedor:
+                Modo Administrador (DiBorde): Previsualizar vendedor:
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <select
@@ -673,7 +673,7 @@ export default function ResellerDashboard() {
                 lineHeight: 1.45
               }}
             >
-              <strong style={{ color: 'var(--color-carbon)' }}>Motivo registrado por Cristian:</strong>{' '}
+              <strong style={{ color: 'var(--color-carbon)' }}>Motivo registrado por DiBorde:</strong>{' '}
               {activeReseller.debtReason || 'Saldo pendiente de rendición'}.
               <div style={{ fontSize: '0.74rem', color: '#B91C1C', marginTop: '6px', backgroundColor: '#FEF2F2', padding: '6px 10px', borderRadius: '4px', border: '1px solid #FECACA' }}>
                 <strong>Aviso de Compromiso:</strong> Recuerda que según el compromiso comercial firmado, las demoras injustificadas en saldar la deuda generan intereses punitorios por mora. Coordina tu rendición a la brevedad.
@@ -800,7 +800,7 @@ export default function ResellerDashboard() {
             </div>
           ) : (
             <p style={{ fontSize: '0.84rem', color: 'var(--color-carbon-muted)', margin: '0.5rem 0' }}>
-              No tenés mercadería asignada para esta jornada. Pedile a Cristian en el obrador que te cargue una tanda.
+              No tenés mercadería asignada para esta jornada. Solicita en el obrador de DiBorde que te carguen una tanda.
             </p>
           )}
         </section>
@@ -907,7 +907,7 @@ export default function ResellerDashboard() {
             Informar Ventas de la Jornada
           </h3>
           <p style={{ fontSize: '0.8rem', color: 'var(--color-carbon-muted)', margin: '0 0 1.25rem 0' }}>
-            Cargá cuántas unidades vendiste y en qué lugar. Cristian lo recibe al instante en el panel central.
+            Cargá cuántas unidades vendiste y en qué lugar. Se recibe al instante en el panel central de DiBorde.
           </p>
 
           {salesReportSuccess && (
@@ -927,7 +927,7 @@ export default function ResellerDashboard() {
               }}
             >
               <CheckCircle2 size={16} strokeWidth={1.5} />
-              <span>¡Reporte de ventas enviado exitosamente a Cristian!</span>
+              <span>¡Reporte de ventas enviado exitosamente a DiBorde!</span>
             </div>
           )}
 
@@ -1105,7 +1105,7 @@ export default function ResellerDashboard() {
               }}
             >
               <CheckCircle2 size={16} strokeWidth={1.5} />
-              <span>¡Mensaje guardado para Cristian!</span>
+              <span>¡Mensaje guardado para DiBorde!</span>
             </div>
           )}
 
@@ -1174,7 +1174,7 @@ export default function ResellerDashboard() {
               }}
             >
               <Send size={14} strokeWidth={1.5} />
-              <span>Enviar Nota a Cristian</span>
+              <span>Enviar Nota a DiBorde</span>
             </button>
           </form>
         </section>
@@ -1214,7 +1214,7 @@ export default function ResellerDashboard() {
                     </span>
                     {note.status === 'leido' ? (
                       <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#15803D', backgroundColor: '#DCFCE7', padding: '2px 6px', borderRadius: '4px' }}>
-                        Visto por Cristian
+                        Visto por DiBorde
                       </span>
                     ) : (
                       <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#B45309', backgroundColor: '#FEF3C7', padding: '2px 6px', borderRadius: '4px' }}>
@@ -1235,7 +1235,7 @@ export default function ResellerDashboard() {
         )}
 
         {/* ======================================================== */}
-        {/* 8. BOTÓN WHATSAPP DIRECTO CON CRISTIAN                  */}
+        {/* 8. BOTÓN WHATSAPP DIRECTO CON DIBORDE                  */}
         {/* ======================================================== */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.5rem' }}>
           <button
@@ -1260,7 +1260,7 @@ export default function ResellerDashboard() {
             }}
           >
             <MessageCircle size={17} strokeWidth={1.5} color="#FFFFFF" />
-            <span>Avisar Rendición por WhatsApp a Cristian</span>
+            <span>Avisar Rendición por WhatsApp a DiBorde</span>
           </button>
         </div>
 
