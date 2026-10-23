@@ -95,19 +95,33 @@ export default function Footer({ setCurrentRoute }) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.74rem', color: 'var(--color-carbon-subtle)', paddingTop: '1.25rem', borderTop: '1px solid var(--color-border)', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.74rem', color: 'var(--color-carbon-subtle)', paddingTop: '1.25rem', borderTop: '1px solid var(--color-border)', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div>© {new Date().getFullYear()} Di Borde Alimentos Artesanales. Chimbas, San Juan.</div>
-          <a
-            href="#/admin"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate('/admin');
-            }}
-            style={{ color: 'var(--color-carbon-subtle)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', opacity: 0.7 }}
-            title="Panel de Gestión Exclusivo para Administración"
-          >
-            <span>Gestión Admin</span>
-          </a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <a
+              href="#/vendedor"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/vendedor');
+              }}
+              style={{ color: 'var(--color-carbon-subtle)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', opacity: 0.75 }}
+              title="Panel Personal para Vendedores de Calle"
+            >
+              <span>Portal Vendedores</span>
+            </a>
+            <span style={{ color: 'var(--color-border)' }}>·</span>
+            <a
+              href="#/admin"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/admin');
+              }}
+              style={{ color: 'var(--color-carbon-subtle)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', opacity: 0.75 }}
+              title="Panel de Gestión Exclusivo para Administración"
+            >
+              <span>Gestión Admin</span>
+            </a>
+          </div>
         </div>
       </div>
     </footer>

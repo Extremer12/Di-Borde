@@ -13,8 +13,9 @@ import CatalogView from './views/CatalogView.jsx';
 import B2BComerciosView from './views/B2BComerciosView.jsx';
 import ObradorView from './views/ObradorView.jsx';
 
-// Admin Views
+// Operations Views
 import AdminDashboard from './views/AdminDashboard.jsx';
+import ResellerDashboard from './views/ResellerDashboard.jsx';
 import PortalLoginView from './views/PortalLoginView.jsx';
 
 function MainLayout() {
@@ -31,17 +32,18 @@ function MainLayout() {
     const handleHashChange = () => {
       let hash = window.location.hash.replace('#', '') || '/';
 
-      // Redirigir accesos legacy al panel administrativo
-      if (hash === '/vendedores' || hash === '/preventistas') {
-        window.location.hash = '/admin';
-        hash = '/admin';
+      if (hash === '/preventistas') {
+        window.location.hash = '/vendedor';
+        hash = '/vendedor';
       }
 
       setCurrentRoute(hash);
 
       // Context auto-adjustment based on route
-      if (hash === '/admin' || hash === '/portal' || hash === '/gestion') {
+      if (hash === '/admin' || hash === '/gestion') {
         document.title = 'Gestión Central Admin | Di Borde';
+      } else if (hash === '/vendedor' || hash === '/vendedores') {
+        document.title = 'Portal de Vendedor | Di Borde';
       } else if (hash === '/comercios') {
         setActiveChannel('mayorista');
         document.title = 'Comercios & Cafeterías | Di Borde';
@@ -81,13 +83,24 @@ function MainLayout() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const isAdminRoute = currentRoute === '/admin' || currentRoute === '/portal' || currentRoute === '/gestion';
+  const isPortalRoute =
+    currentRoute === '/admin' ||
+    currentRoute === '/portal' ||
+    currentRoute === '/gestion' ||
+    currentRoute === '/vendedor' ||
+    currentRoute === '/vendedores';
 
   const renderCurrentView = () => {
     switch (currentRoute) {
+      case '/vendedor':
+      case '/vendedores':
+        return <ResellerDashboard />;
       case '/admin':
       case '/portal':
       case '/gestion':
+        if (currentUser?.role === 'reseller') {
+          return <ResellerDashboard />;
+        }
         return currentUser && currentUser.role === 'admin' ? (
           <AdminDashboard />
         ) : (
@@ -107,7 +120,7 @@ function MainLayout() {
 
   return (
     <div className="app-shell" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      {!isAdminRoute && (
+      {!isPortalRoute && (
         <Header
           currentRoute={currentRoute}
           setCurrentRoute={setCurrentRoute}
@@ -119,12 +132,12 @@ function MainLayout() {
         {renderCurrentView()}
       </main>
 
-      {!isAdminRoute && (
+      {!isPortalRoute && (
         <Footer setCurrentRoute={setCurrentRoute} />
       )}
 
       {/* Floating Bottom Bar only on client shop */}
-      {!isAdminRoute && (
+      {!isPortalRoute && (
         <FloatingCartBar onOpenOrderModal={() => setIsOrderModalOpen(true)} />
       )}
 

@@ -88,6 +88,21 @@ export function AuthProvider({ children }) {
     return { success: true };
   };
 
+  const loginAsReseller = (resellerId) => {
+    const foundReseller = opsState.resellers.find((r) => r.id === resellerId) || opsState.resellers[0];
+    if (foundReseller) {
+      const user = {
+        role: 'reseller',
+        resellerId: foundReseller.id,
+        username: foundReseller.id,
+        name: foundReseller.name
+      };
+      setCurrentUser(user);
+      return { success: true, role: 'reseller', reseller: foundReseller };
+    }
+    return { success: false, message: 'Vendedor no encontrado' };
+  };
+
   const logout = () => {
     setCurrentUser(null);
   };
@@ -397,6 +412,41 @@ export function AuthProvider({ children }) {
     return { success: true };
   };
 
+  const submitResellerReport = ({ resellerId, resellerName, type = 'venta', content = '', salesDetails = null }) => {
+    let formattedContent = (content || '').trim();
+    if (salesDetails) {
+      const { pizzetasSold = 0, paquetes10Sold = 0, paquetesGrandesSold = 0, location = '', notes = '' } = salesDetails;
+      const parts = [];
+      if (pizzetasSold > 0) parts.push(`${pizzetasSold} pizzetas con queso`);
+      if (paquetes10Sold > 0) parts.push(`${paquetes10Sold} paq. x10`);
+      if (paquetesGrandesSold > 0) parts.push(`${paquetesGrandesSold} paq. grandes x2`);
+
+      const soldText = parts.length > 0 ? parts.join(', ') : 'Venta del turno';
+      formattedContent = `Reporte de ventas: vendió ${soldText}. Zona: ${location || 'calle'}.${notes ? ` Nota: ${notes}` : ''} ${formattedContent ? `| ${formattedContent}` : ''}`.trim();
+    }
+
+    if (!formattedContent) {
+      return { success: false, message: 'El contenido del reporte no puede estar vacío' };
+    }
+
+    const newNote = {
+      id: `NOTE-${Date.now().toString().slice(-4)}`,
+      resellerId: resellerId || 'general',
+      resellerName: resellerName || 'Vendedor',
+      date: `Hoy ${new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`,
+      type,
+      content: formattedContent,
+      status: 'pendiente_accion'
+    };
+
+    updateOpsState((prev) => ({
+      ...prev,
+      resellerNotes: [newNote, ...prev.resellerNotes]
+    }));
+
+    return { success: true };
+  };
+
   const toggleResellerNoteStatus = (noteId) => {
     updateOpsState((prev) => ({
       ...prev,
@@ -478,6 +528,7 @@ export function AuthProvider({ children }) {
         opsState,
         login,
         loginAsAdmin,
+        loginAsReseller,
         logout,
         addRawMaterial,
         deleteRawMaterial,
@@ -491,6 +542,7 @@ export function AuthProvider({ children }) {
         registerPayment,
         updateResellerDebt,
         addResellerNote,
+        submitResellerReport,
         toggleResellerNoteStatus,
         createOrder,
         updateOrderStatus,

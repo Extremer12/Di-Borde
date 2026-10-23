@@ -27,6 +27,7 @@ export default function AdminDashboard() {
     currentUser,
     opsState,
     logout,
+    loginAsReseller,
     addRawMaterial,
     deleteRawMaterial,
     addRawMaterialPurchase,
@@ -1142,6 +1143,30 @@ export default function AdminDashboard() {
                       >
                         Gestionar Deuda
                       </button>
+
+                      <a
+                        href="#/vendedor"
+                        onClick={() => {
+                          loginAsReseller(r.id);
+                        }}
+                        style={{
+                          backgroundColor: 'transparent',
+                          color: 'var(--color-carbon-muted)',
+                          border: '1px solid var(--color-border)',
+                          padding: '0.45rem 0.85rem',
+                          borderRadius: '6px',
+                          fontSize: '0.8rem',
+                          fontWeight: 500,
+                          textDecoration: 'none',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px'
+                        }}
+                        title={`Abrir la vista de celular de ${r.name}`}
+                      >
+                        <span>Ver Portal Móvil</span>
+                        <ExternalLink size={12} strokeWidth={1.5} />
+                      </a>
                     </div>
                   </div>
                 );
