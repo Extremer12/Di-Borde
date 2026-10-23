@@ -19,7 +19,11 @@ import {
   Phone,
   FileText,
   X,
-  ExternalLink
+  ExternalLink,
+  ShieldAlert,
+  Edit2,
+  Mail,
+  Shield
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -35,6 +39,7 @@ export default function AdminDashboard() {
     addCashflowTransaction,
     deleteCashflowTransaction,
     addReseller,
+    updateReseller,
     deleteReseller,
     assignMercaderia,
     registerPayment,
@@ -43,10 +48,19 @@ export default function AdminDashboard() {
     toggleResellerNoteStatus,
     createOrder,
     updateOrderStatus,
-    addProductionStock
+    addProductionStock,
+    signInWithGoogle,
+    ADMIN_EMAIL
   } = useAuth();
 
+  // Control estricto de acceso de Administrador por correo
+  const isAuthorizedAdmin =
+    currentUser &&
+    currentUser.role === 'admin' &&
+    currentUser.email?.toLowerCase() === (ADMIN_EMAIL || 'cristianbordon186@gmail.com').toLowerCase();
+
   const [activeTab, setActiveTab] = useState('caja'); // 'caja' | 'insumos' | 'vendedores' | 'sugerencias' | 'pedidos'
+
 
   // Modales
   const [isCashflowModalOpen, setIsCashflowModalOpen] = useState(false);
@@ -73,8 +87,19 @@ export default function AdminDashboard() {
 
   const [isNewResellerModalOpen, setIsNewResellerModalOpen] = useState(false);
   const [newResellerName, setNewResellerName] = useState('');
+  const [newResellerEmail, setNewResellerEmail] = useState('');
   const [newResellerPhone, setNewResellerPhone] = useState('');
   const [newResellerZone, setNewResellerZone] = useState('');
+  const [newResellerDni, setNewResellerDni] = useState('');
+  const [newResellerAddress, setNewResellerAddress] = useState('');
+
+  const [editingReseller, setEditingReseller] = useState(null);
+  const [editResellerName, setEditResellerName] = useState('');
+  const [editResellerEmail, setEditResellerEmail] = useState('');
+  const [editResellerPhone, setEditResellerPhone] = useState('');
+  const [editResellerZone, setEditResellerZone] = useState('');
+  const [editResellerStatus, setEditResellerStatus] = useState('activo');
+
 
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [noteResellerId, setNoteResellerId] = useState(opsState.resellers[0]?.id || '');
@@ -189,14 +214,43 @@ export default function AdminDashboard() {
     e.preventDefault();
     addReseller({
       name: newResellerName,
+      email: newResellerEmail,
       phone: newResellerPhone,
-      zone: newResellerZone
+      zone: newResellerZone,
+      dni: newResellerDni,
+      address: newResellerAddress
     });
     setNewResellerName('');
+    setNewResellerEmail('');
     setNewResellerPhone('');
     setNewResellerZone('');
+    setNewResellerDni('');
+    setNewResellerAddress('');
     setIsNewResellerModalOpen(false);
   };
+
+  const handleOpenEditReseller = (reseller) => {
+    setEditingReseller(reseller);
+    setEditResellerName(reseller.name || '');
+    setEditResellerEmail(reseller.email || '');
+    setEditResellerPhone(reseller.phone || '');
+    setEditResellerZone(reseller.zone || '');
+    setEditResellerStatus(reseller.status || 'activo');
+  };
+
+  const handleSaveEditReseller = (e) => {
+    e.preventDefault();
+    if (!editingReseller) return;
+    updateReseller(editingReseller.id, {
+      name: editResellerName,
+      email: editResellerEmail,
+      phone: editResellerPhone,
+      zone: editResellerZone,
+      status: editResellerStatus
+    });
+    setEditingReseller(null);
+  };
+
 
   const handleCreateNote = (e) => {
     e.preventDefault();
@@ -261,6 +315,87 @@ export default function AdminDashboard() {
     updateRawMaterialStock(adjustMaterialModal.id, adjustStockVal);
     setAdjustMaterialModal(null);
   };
+
+  // Si no es el administrador autorizado (cristianbordon186@gmail.com), denegar acceso
+  if (!isAuthorizedAdmin) {
+    return (
+      <div style={{ backgroundColor: 'var(--color-cream)', minHeight: '85vh', padding: '3.5rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ maxWidth: '460px', width: '100%', backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid #FECACA', padding: '2.25rem 1.75rem', textAlign: 'center', boxShadow: '0 4px 20px -2px rgba(28, 25, 23, 0.05)' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto' }}>
+            <ShieldAlert size={26} color="#DC2626" strokeWidth={1.5} />
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.45rem', color: '#991B1B', margin: '0 0 0.5rem 0' }}>
+            Acceso Administrativo Exclusivo
+          </h2>
+          <p style={{ fontSize: '0.86rem', color: '#7F1D1D', margin: '0 0 1rem 0', lineHeight: 1.5 }}>
+            Este panel contiene compras de insumos, caja y control de vendedores de Di Borde. Por política de seguridad, el único correo con permisos de acceso como administrador es:
+          </p>
+          <div style={{ display: 'inline-block', backgroundColor: 'var(--color-cream-light)', padding: '6px 14px', borderRadius: '6px', border: '1px solid var(--color-border)', fontSize: '0.84rem', fontWeight: 700, color: 'var(--color-carbon)', marginBottom: '1.25rem' }}>
+            {ADMIN_EMAIL || 'cristianbordon186@gmail.com'}
+          </div>
+
+          {currentUser ? (
+            <div style={{ fontSize: '0.78rem', color: '#991B1B', backgroundColor: '#FEF2F2', padding: '8px 12px', borderRadius: '6px', marginBottom: '1.25rem', border: '1px dashed #FCA5A5' }}>
+              Has iniciado sesión como: <strong>{currentUser.email}</strong> (Sin permisos de administración).
+            </div>
+          ) : (
+            <div style={{ fontSize: '0.78rem', color: 'var(--color-carbon-muted)', marginBottom: '1.25rem' }}>
+              Debes identificarte con la cuenta de Google de Cristian para continuar.
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            <button
+              type="button"
+              onClick={() => signInWithGoogle('/admin')}
+              style={{
+                width: '100%',
+                backgroundColor: 'var(--color-carbon)',
+                color: '#FAF8F5',
+                borderRadius: '6px',
+                padding: '11px 16px',
+                fontSize: '0.88rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              <span>Ingresar con Google ({ADMIN_EMAIL})</span>
+              <ArrowRight size={15} strokeWidth={1.5} />
+            </button>
+
+            {currentUser && (
+              <button
+                type="button"
+                onClick={logout}
+                style={{
+                  width: '100%',
+                  backgroundColor: 'transparent',
+                  color: 'var(--color-carbon)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '6px',
+                  padding: '9px 12px',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Cerrar Sesión Actual
+              </button>
+            )}
+
+            <a href="#/" style={{ fontSize: '0.8rem', color: 'var(--color-carbon-muted)', textDecoration: 'none', marginTop: '6px' }}>
+              ← Volver a la tienda web
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: 'var(--color-cream)', minHeight: '100vh', paddingBottom: '6rem' }}>
@@ -994,7 +1129,27 @@ export default function AdminDashboard() {
                             )}
                           </div>
                           <div style={{ fontSize: '0.78rem', color: 'var(--color-carbon-muted)', marginTop: '2px' }}>
-                            Zona: {r.zone} · Tel: {r.phone}
+                            Zona: {r.zone} · Tel: {r.phone || 'Sin tel'}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap', marginTop: '6px' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.74rem', color: 'var(--color-carbon)', backgroundColor: 'var(--color-cream)', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                              <span><strong>Google:</strong> {r.email || <span style={{ color: '#DC2626', fontWeight: 600 }}>Sin correo asignado</span>}</span>
+                            </div>
+                            {r.termsAccepted ? (
+                              <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#15803D', backgroundColor: '#F0FDF4', padding: '2px 8px', borderRadius: '4px', border: '1px solid #BBF7D0' }}>
+                                Compromiso de rendición: Firmado ({r.termsAcceptedAt ? new Date(r.termsAcceptedAt).toLocaleDateString('es-AR') : 'OK'})
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#B45309', backgroundColor: '#FEF3C7', padding: '2px 8px', borderRadius: '4px', border: '1px solid #FDE68A' }}>
+                                Compromiso: Pendiente de firma
+                              </span>
+                            )}
+                            {r.dni && (
+                              <span style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)' }}>
+                                DNI: {r.dni}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1142,6 +1297,27 @@ export default function AdminDashboard() {
                         }}
                       >
                         Gestionar Deuda
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditReseller(r)}
+                        style={{
+                          backgroundColor: '#FFFFFF',
+                          color: 'var(--color-carbon)',
+                          border: '1px solid var(--color-border)',
+                          padding: '0.45rem 0.85rem',
+                          borderRadius: '6px',
+                          fontSize: '0.8rem',
+                          fontWeight: 500,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px'
+                        }}
+                      >
+                        <Edit2 size={12} strokeWidth={1.5} />
+                        <span>Editar / Asignar Gmail</span>
                       </button>
 
                       <a
@@ -1708,7 +1884,7 @@ export default function AdminDashboard() {
       {/* Modal: Registrar Nuevo Vendedor */}
       {isNewResellerModalOpen && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28,25,23,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', maxWidth: '420px', width: '100%', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', maxWidth: '440px', width: '100%', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', margin: 0 }}>Registrar Nuevo Vendedor</h3>
               <button onClick={() => setIsNewResellerModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
@@ -1719,14 +1895,84 @@ export default function AdminDashboard() {
                 <input type="text" required placeholder="ej: Joaquín Pereyra" value={newResellerName} onChange={(e) => setNewResellerName(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Teléfono / WhatsApp:</label>
-                <input type="text" placeholder="ej: +54 9 264 555-0199" value={newResellerPhone} onChange={(e) => setNewResellerPhone(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: '#B91C1C', marginBottom: '4px' }}>
+                  Correo de Google (Gmail) para Acceso al Portal (*):
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="ej: joaquin.vendedor@gmail.com"
+                  value={newResellerEmail}
+                  onChange={(e) => setNewResellerEmail(e.target.value)}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #FCA5A5', backgroundColor: '#FEF2F2' }}
+                />
+                <div style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)', marginTop: '2px' }}>
+                  El vendedor ingresará a <code>/#/vendedor</code> con esta cuenta de Google.
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Teléfono / WhatsApp:</label>
+                  <input type="text" placeholder="ej: 264 555-0199" value={newResellerPhone} onChange={(e) => setNewResellerPhone(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Zona Habitual:</label>
+                  <input type="text" placeholder="ej: Plaza Chimbas" value={newResellerZone} onChange={(e) => setNewResellerZone(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+              </div>
+              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Guardar y Habilitar Vendedor</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Vendedor / Asignar Correo de Google */}
+      {editingReseller && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(28,25,23,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '1rem' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', maxWidth: '440px', width: '100%', padding: '1.5rem', border: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', margin: 0 }}>Editar Datos de Vendedor</h3>
+              <button onClick={() => setEditingReseller(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleSaveEditReseller} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Nombre y Apellido:</label>
+                <input type="text" required value={editResellerName} onChange={(e) => setEditResellerName(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Zona Habitual de Venta:</label>
-                <input type="text" placeholder="ej: Plaza de Chimbas / Parque de Mayo" value={newResellerZone} onChange={(e) => setNewResellerZone(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon)', marginBottom: '4px' }}>
+                  Correo de Google (Gmail) para Acceso al Portal:
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="ej: vendedor@gmail.com"
+                  value={editResellerEmail}
+                  onChange={(e) => setEditResellerEmail(e.target.value)}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', backgroundColor: '#FAF8F5' }}
+                />
+                <div style={{ fontSize: '0.72rem', color: 'var(--color-carbon-muted)', marginTop: '2px' }}>
+                  Quien no tenga su correo registrado aquí no podrá ingresar al panel de vendedores.
+                </div>
               </div>
-              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Guardar Vendedor</button>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Teléfono / WhatsApp:</label>
+                  <input type="text" value={editResellerPhone} onChange={(e) => setEditResellerPhone(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Zona de Venta:</label>
+                  <input type="text" value={editResellerZone} onChange={(e) => setEditResellerZone(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Estado de la Cuenta:</label>
+                <select value={editResellerStatus} onChange={(e) => setEditResellerStatus(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                  <option value="activo">Activo (Puede ingresar al portal)</option>
+                  <option value="inactivo">Inactivo / Pausado (Acceso bloqueado)</option>
+                </select>
+              </div>
+              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Guardar Cambios</button>
             </form>
           </div>
         </div>

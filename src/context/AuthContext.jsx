@@ -14,15 +14,69 @@ import {
   dbInsertResellerNote,
   dbUpdateResellerNoteStatus,
   dbUpsertReseller,
+  dbDeleteReseller,
   dbInsertOrder,
   dbUpdateOrderStatus
 } from '../lib/supabase.js';
 
+export const ADMIN_EMAIL = 'cristianbordon186@gmail.com';
+
 const AuthContext = createContext(null);
-const AUTH_STORAGE_KEY = 'di_borde_auth_user_v2';
+const AUTH_STORAGE_KEY = 'di_borde_auth_user_v3';
+
+// Función para determinar el rol y permisos según el correo de Google
+export function resolveUserRole(email, resellers = []) {
+  if (!email) return null;
+  const cleanEmail = email.toLowerCase().trim();
+
+  // 1. Administrador Central Único
+  if (cleanEmail === ADMIN_EMAIL.toLowerCase()) {
+    return {
+      role: 'admin',
+      email: cleanEmail,
+      name: 'Cristian Bordón (Administrador Central)',
+      isAdmin: true
+    };
+  }
+
+  // 2. Vendedor Registrado por el Administrador
+  const foundReseller = resellers.find(
+    (r) => (r.email || '').toLowerCase().trim() === cleanEmail
+  );
+
+  if (foundReseller) {
+    if (foundReseller.status === 'inactivo' || foundReseller.status === 'suspendido') {
+      return {
+        role: 'suspended',
+        email: cleanEmail,
+        name: foundReseller.name,
+        resellerId: foundReseller.id,
+        message: 'Tu cuenta de vendedor ha sido pausada temporalmente por la administración.'
+      };
+    }
+
+    return {
+      role: 'reseller',
+      email: cleanEmail,
+      name: foundReseller.name,
+      resellerId: foundReseller.id,
+      termsAccepted: !!foundReseller.termsAccepted,
+      termsAcceptedAt: foundReseller.termsAcceptedAt || null,
+      reseller: foundReseller
+    };
+  }
+
+  // 3. Cuenta de Google no registrada en la nómina
+  return {
+    role: 'unauthorized',
+    email: cleanEmail,
+    message: 'Este correo de Google no figura en la nómina de vendedores autorizados de Di Borde.'
+  };
+}
 
 export function AuthProvider({ children }) {
   const [opsState, setOpsState] = useState(() => loadAdminOpsState());
+  const [googleUser, setGoogleUser] = useState(null);
 
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -31,7 +85,6 @@ export function AuthProvider({ children }) {
     } catch (e) {
       console.warn('Failed to load user', e);
     }
-    // Por defecto, usuario null (requiere login)
     return null;
   });
 
@@ -48,6 +101,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let isMounted = true;
 
+    // 1. Cargar datos remotos
     fetchAllDataFromSupabase().then((remoteData) => {
       if (isMounted && remoteData) {
         setOpsState((prev) => {
@@ -66,16 +120,22 @@ export function AuthProvider({ children }) {
       }
     });
 
+    // 2. Obtener sesión activa existente
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (isMounted && session?.user) {
+        setGoogleUser(session.user);
+      }
+    });
+
+    // 3. Escuchar cambios de autenticación con Google
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        const email = session.user.email || '';
-        const name = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuario';
-        const loggedUser = {
-          role: 'admin',
-          username: email,
-          name: `${name} (Google Auth)`
-        };
-        setCurrentUser(loggedUser);
+      if (isMounted) {
+        if (session?.user) {
+          setGoogleUser(session.user);
+        } else if (event === 'SIGNED_OUT') {
+          setGoogleUser(null);
+          setCurrentUser(null);
+        }
       }
     });
 
@@ -84,6 +144,24 @@ export function AuthProvider({ children }) {
       authListener?.subscription?.unsubscribe();
     };
   }, []);
+
+  // Evaluar rol del usuario cada vez que cambia googleUser o la nómina de vendedores
+  useEffect(() => {
+    if (!googleUser) {
+      return;
+    }
+
+    const email = (googleUser.email || '').toLowerCase().trim();
+    const resolved = resolveUserRole(email, opsState.resellers);
+
+    if (resolved) {
+      setCurrentUser((prev) => ({
+        ...resolved,
+        avatarUrl: googleUser.user_metadata?.avatar_url || prev?.avatarUrl || null,
+        googleName: googleUser.user_metadata?.full_name || prev?.googleName || null
+      }));
+    }
+  }, [googleUser, opsState.resellers]);
 
   // Actualizar opsState y persistir
   const updateOpsState = (updater) => {
@@ -94,72 +172,43 @@ export function AuthProvider({ children }) {
     });
   };
 
-  // Login (administrador exclusivo o vendedores)
-  const login = (username = '', password = '') => {
-    const cleanUser = username.trim().toLowerCase();
-    const cleanPass = password.trim();
-
-    // 1. Check Admin (PIN 1234, admin, diborde, etc.)
-    if (
-      (cleanUser === 'admin' || cleanUser === 'cristian' || cleanUser === 'diborde') &&
-      (cleanPass === '1234' || cleanPass === 'admin' || cleanPass === '123' || cleanPass === 'diborde')
-    ) {
-      const user = {
-        role: 'admin',
-        username: 'admin',
-        name: 'Cristian (Administrador Di Borde)'
-      };
-      setCurrentUser(user);
-      return { success: true, role: 'admin' };
-    }
-
-    // 2. Check Resellers
-    const foundReseller = opsState.resellers.find(
-      (r) => r.id.toLowerCase() === cleanUser || r.name.toLowerCase().includes(cleanUser)
-    );
-
-    if (foundReseller && (cleanPass === '1234' || cleanPass === '123')) {
-      const user = {
-        role: 'reseller',
-        resellerId: foundReseller.id,
-        username: foundReseller.id,
-        name: foundReseller.name
-      };
-      setCurrentUser(user);
-      return { success: true, role: 'reseller', reseller: foundReseller };
-    }
-
-    return { success: false, message: 'Usuario o clave no válidos (Ejemplo: admin / 1234)' };
-  };
+  const login = () => ({ success: false, message: 'Acceso exclusivo mediante Google Auth.' });
 
   const loginAsAdmin = () => {
-    const user = {
+    setCurrentUser({
       role: 'admin',
-      username: 'admin',
-      name: 'Cristian (Administrador Di Borde)'
-    };
-    setCurrentUser(user);
-    return { success: true };
+      email: ADMIN_EMAIL,
+      name: 'Cristian Bordón (Administrador Central)',
+      isAdmin: true
+    });
   };
 
   const loginAsReseller = (resellerId) => {
-    const foundReseller = opsState.resellers.find((r) => r.id === resellerId) || opsState.resellers[0];
+    const foundReseller = opsState.resellers.find((r) => r.id === resellerId);
     if (foundReseller) {
-      const user = {
+      setCurrentUser({
         role: 'reseller',
+        email: foundReseller.email || `${foundReseller.id}@diborde.com`,
+        name: foundReseller.name,
         resellerId: foundReseller.id,
-        username: foundReseller.id,
-        name: foundReseller.name
-      };
-      setCurrentUser(user);
-      return { success: true, role: 'reseller', reseller: foundReseller };
+        termsAccepted: !!foundReseller.termsAccepted,
+        termsAcceptedAt: foundReseller.termsAcceptedAt,
+        reseller: foundReseller
+      });
     }
-    return { success: false, message: 'Vendedor no encontrado' };
   };
 
-  const logout = () => {
+  // Cierre de sesión completo (Supabase + local)
+  const logout = async () => {
+    try {
+      await signOutSupabase();
+    } catch (e) {
+      console.warn('SignOut error', e);
+    }
+    setGoogleUser(null);
     setCurrentUser(null);
   };
+
 
   // --------------------------------------------------------------------------
   // MÓDULO 1: COMPRA DE INSUMOS Y GESTIÓN DE MATERIAS PRIMAS
@@ -413,14 +462,26 @@ export function AuthProvider({ children }) {
     }));
   };
 
-  const addReseller = ({ name, phone = '', zone = '' }) => {
+  const addReseller = async ({ name, email, phone = '', zone = '', dni = '', address = '' }) => {
     if (!name?.trim()) return { success: false, message: 'El nombre es obligatorio' };
+    const cleanEmail = (email || '').trim().toLowerCase();
     const id = `rev-${name.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 15)}-${Date.now().toString().slice(-3)}`;
+    const initials = name.trim().split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+
     const newReseller = {
       id,
       name: name.trim(),
+      email: cleanEmail,
       phone: phone.trim(),
       zone: zone.trim() || 'Chimbas',
+      dni: dni.trim(),
+      address: address.trim(),
+      initials,
+      status: 'activo',
+      termsAccepted: false,
+      termsAcceptedAt: null,
+      interestAcknowledged: false,
+      emergencyContact: '',
       assigned: null,
       debtAmount: 0,
       debtReason: null,
@@ -432,15 +493,77 @@ export function AuthProvider({ children }) {
       resellers: [...prev.resellers, newReseller]
     }));
 
+    dbUpsertReseller(newReseller);
+    return { success: true, reseller: newReseller };
+  };
+
+  const updateReseller = async (resellerId, updates) => {
+    let updatedTarget = null;
+    updateOpsState((prev) => {
+      const updated = prev.resellers.map((r) => {
+        if (r.id !== resellerId) return r;
+        updatedTarget = {
+          ...r,
+          ...updates,
+          email: updates.email !== undefined ? updates.email.trim().toLowerCase() : r.email
+        };
+        return updatedTarget;
+      });
+      return { ...prev, resellers: updated };
+    });
+
+    if (updatedTarget) {
+      dbUpsertReseller(updatedTarget);
+    }
     return { success: true };
   };
 
-  const deleteReseller = (resellerId) => {
+  const deleteReseller = async (resellerId) => {
     updateOpsState((prev) => ({
       ...prev,
       resellers: prev.resellers.filter((r) => r.id !== resellerId)
     }));
+    dbDeleteReseller(resellerId);
   };
+
+  const submitResellerCommitment = async ({ resellerId, dni, phone, address, emergencyContact }) => {
+    const nowIso = new Date().toISOString();
+    let updatedResellerObj = null;
+
+    updateOpsState((prev) => {
+      const updated = prev.resellers.map((r) => {
+        if (r.id !== resellerId) return r;
+        updatedResellerObj = {
+          ...r,
+          dni: dni ? dni.trim() : r.dni,
+          phone: phone ? phone.trim() : r.phone,
+          address: address ? address.trim() : r.address,
+          emergencyContact: emergencyContact ? emergencyContact.trim() : r.emergencyContact,
+          termsAccepted: true,
+          termsAcceptedAt: nowIso,
+          interestAcknowledged: true
+        };
+        return updatedResellerObj;
+      });
+      return { ...prev, resellers: updated };
+    });
+
+    if (updatedResellerObj) {
+      await dbUpsertReseller(updatedResellerObj);
+    }
+
+    setCurrentUser((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        termsAccepted: true,
+        termsAcceptedAt: nowIso
+      };
+    });
+
+    return { success: true };
+  };
+
 
   // --------------------------------------------------------------------------
   // MÓDULO 4: REPORTES DE VENTAS Y SUGERENCIAS DE VENDEDORES
@@ -591,7 +714,9 @@ export function AuthProvider({ children }) {
         addCashflowTransaction,
         deleteCashflowTransaction,
         addReseller,
+        updateReseller,
         deleteReseller,
+        submitResellerCommitment,
         assignMercaderia,
         registerPayment,
         updateResellerDebt,
@@ -601,7 +726,8 @@ export function AuthProvider({ children }) {
         createOrder,
         updateOrderStatus,
         addProductionStock,
-        signInWithGoogle
+        signInWithGoogle,
+        ADMIN_EMAIL
       }}
     >
       {children}

@@ -110,10 +110,17 @@ export async function fetchAllDataFromSupabase() {
     const resellers = (resellersRes.data || []).map((r) => ({
       id: r.id,
       name: r.name,
+      email: (r.email || '').toLowerCase().trim(),
       phone: r.phone || '',
       zone: r.zone || '',
       initials: r.initials || r.name.slice(0, 2).toUpperCase(),
       status: r.status || 'activo',
+      dni: r.dni || '',
+      address: r.address || '',
+      termsAccepted: !!r.terms_accepted,
+      termsAcceptedAt: r.terms_accepted_at || null,
+      interestAcknowledged: !!r.interest_acknowledged,
+      emergencyContact: r.emergency_contact || '',
       debtAmount: parseFloat(r.debt_amount) || 0,
       debtReason: r.debt_reason || null,
       debtDate: r.debt_date || null,
@@ -240,9 +247,17 @@ export async function dbUpsertReseller(reseller) {
     await supabase.from('di_borde_resellers').upsert({
       id: reseller.id,
       name: reseller.name,
+      email: reseller.email ? reseller.email.toLowerCase().trim() : null,
       phone: reseller.phone || null,
       zone: reseller.zone || null,
       initials: reseller.initials || reseller.name.slice(0, 2).toUpperCase(),
+      status: reseller.status || 'activo',
+      dni: reseller.dni || null,
+      address: reseller.address || null,
+      terms_accepted: !!reseller.termsAccepted,
+      terms_accepted_at: reseller.termsAcceptedAt || null,
+      interest_acknowledged: !!reseller.interestAcknowledged,
+      emergency_contact: reseller.emergencyContact || null,
       debt_amount: reseller.debtAmount || 0,
       debt_reason: reseller.debtReason || null,
       debt_date: reseller.debtDate || null,
@@ -252,6 +267,15 @@ export async function dbUpsertReseller(reseller) {
     console.warn('Sync reseller error', e);
   }
 }
+
+export async function dbDeleteReseller(resellerId) {
+  try {
+    await supabase.from('di_borde_resellers').delete().eq('id', resellerId);
+  } catch (e) {
+    console.warn('Delete reseller error', e);
+  }
+}
+
 
 export async function dbInsertOrder(order) {
   try {
