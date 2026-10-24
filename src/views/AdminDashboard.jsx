@@ -50,6 +50,7 @@ export default function AdminDashboard() {
     updateOrderStatus,
     addProductionStock,
     signInWithGoogle,
+    resetOpsDataToClean,
     ADMIN_EMAIL
   } = useAuth();
 
@@ -256,8 +257,8 @@ export default function AdminDashboard() {
     e.preventDefault();
     const target = opsState.resellers.find((r) => r.id === noteResellerId);
     addResellerNote({
-      resellerId: noteResellerId,
-      resellerName: target ? target.name : 'Vendedor',
+      resellerId: noteResellerId || 'general',
+      resellerName: target ? target.name : 'Administración DiBorde',
       type: noteType,
       content: noteContent
     });
@@ -428,6 +429,31 @@ export default function AdminDashboard() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm('¿Deseas reiniciar el panel a cero? Todos los registros comenzarán limpios.')) {
+                    resetOpsDataToClean();
+                  }
+                }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                  color: '#FAF8F5',
+                  fontSize: '0.78rem',
+                  fontWeight: 500,
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  cursor: 'pointer'
+                }}
+                title="Reiniciar panel a estado limpio inicial"
+              >
+                <span>Limpiar a Cero</span>
+              </button>
+
               <a
                 href="#/"
                 style={{
@@ -707,45 +733,83 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {opsState.cashflow.map((tx) => (
-                      <tr key={tx.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                        <td style={{ padding: '0.75rem 1rem', color: 'var(--color-carbon-muted)' }}>{tx.date}</td>
-                        <td style={{ padding: '0.75rem 1rem' }}>
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              fontSize: '0.72rem',
-                              fontWeight: 600,
-                              textTransform: 'uppercase',
-                              backgroundColor: tx.type === 'ingreso' ? '#F0FDF4' : '#FEF2F2',
-                              color: tx.type === 'ingreso' ? '#15803D' : '#DC2626'
-                            }}
-                          >
-                            {tx.type}
-                          </span>
-                        </td>
-                        <td style={{ padding: '0.75rem 1rem', fontWeight: 500, color: 'var(--color-carbon)' }}>{tx.category}</td>
-                        <td style={{ padding: '0.75rem 1rem', color: 'var(--color-carbon)' }}>
-                          <div>{tx.concept}</div>
-                          {tx.reference && <div style={{ fontSize: '0.72rem', color: 'var(--color-carbon-subtle)' }}>Ref: {tx.reference}</div>}
-                        </td>
-                        <td className="tabular-nums" style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 600, fontSize: '0.92rem', color: tx.type === 'ingreso' ? '#15803D' : '#DC2626' }}>
-                          {tx.type === 'ingreso' ? '+' : '-'}${tx.amount.toLocaleString('es-AR')}
-                        </td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
-                          <button
-                            type="button"
-                            onClick={() => deleteCashflowTransaction(tx.id)}
-                            style={{ color: '#A8A29E', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
-                            title="Eliminar movimiento"
-                          >
-                            <Trash2 size={13} strokeWidth={1.5} />
-                          </button>
+                    {opsState.cashflow.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+                          <div style={{ maxWidth: '420px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'var(--color-cream-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.75rem', border: '1px solid var(--color-border)' }}>
+                              <DollarSign size={22} strokeWidth={1.5} color="var(--color-carbon-muted)" />
+                            </div>
+                            <h4 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', margin: '0 0 0.35rem 0', color: 'var(--color-carbon)' }}>
+                              No hay movimientos de caja registrados
+                            </h4>
+                            <p style={{ fontSize: '0.82rem', color: 'var(--color-carbon-muted)', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
+                              El panel de caja está limpio y listo para operar. Registra el primer ingreso por venta de obrador o egreso de insumos.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => setIsCashflowModalOpen(true)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                backgroundColor: 'var(--color-carbon)',
+                                color: '#FAF8F5',
+                                padding: '0.55rem 1.1rem',
+                                borderRadius: '6px',
+                                border: 'none',
+                                fontSize: '0.82rem',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <Plus size={14} strokeWidth={1.5} />
+                              <span>Registrar Primer Movimiento</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      opsState.cashflow.map((tx) => (
+                        <tr key={tx.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                          <td style={{ padding: '0.75rem 1rem', color: 'var(--color-carbon-muted)' }}>{tx.date}</td>
+                          <td style={{ padding: '0.75rem 1rem' }}>
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                fontSize: '0.72rem',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                backgroundColor: tx.type === 'ingreso' ? '#F0FDF4' : '#FEF2F2',
+                                color: tx.type === 'ingreso' ? '#15803D' : '#DC2626'
+                              }}
+                            >
+                              {tx.type}
+                            </span>
+                          </td>
+                          <td style={{ padding: '0.75rem 1rem', fontWeight: 500, color: 'var(--color-carbon)' }}>{tx.category}</td>
+                          <td style={{ padding: '0.75rem 1rem', color: 'var(--color-carbon)' }}>
+                            <div>{tx.concept}</div>
+                            {tx.reference && <div style={{ fontSize: '0.72rem', color: 'var(--color-carbon-subtle)' }}>Ref: {tx.reference}</div>}
+                          </td>
+                          <td className="tabular-nums" style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 600, fontSize: '0.92rem', color: tx.type === 'ingreso' ? '#15803D' : '#DC2626' }}>
+                            {tx.type === 'ingreso' ? '+' : '-'}${tx.amount.toLocaleString('es-AR')}
+                          </td>
+                          <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => deleteCashflowTransaction(tx.id)}
+                              style={{ color: '#A8A29E', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+                              title="Eliminar movimiento"
+                            >
+                              <Trash2 size={13} strokeWidth={1.5} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -989,20 +1053,55 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {opsState.purchases.map((p) => (
-                      <tr key={p.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                        <td style={{ padding: '0.7rem 1rem', color: 'var(--color-carbon-muted)' }}>{p.date}</td>
-                        <td style={{ padding: '0.7rem 1rem', fontWeight: 600 }}>{p.materialName}</td>
-                        <td className="tabular-nums" style={{ padding: '0.7rem 1rem' }}>{p.quantity} {p.unit}</td>
-                        <td className="tabular-nums" style={{ padding: '0.7rem 1rem' }}>${p.unitPrice.toLocaleString('es-AR')}</td>
-                        <td className="tabular-nums" style={{ padding: '0.7rem 1rem', textAlign: 'right', fontWeight: 600, color: '#DC2626' }}>
-                          -${p.totalAmount.toLocaleString('es-AR')}
-                        </td>
-                        <td style={{ padding: '0.7rem 1rem', color: 'var(--color-carbon-muted)' }}>
-                          {p.supplier} {p.notes ? `(${p.notes})` : ''}
+                    {opsState.purchases.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ padding: '2.5rem 1rem', textAlign: 'center' }}>
+                          <div style={{ maxWidth: '400px', margin: '0 auto' }}>
+                            <p style={{ margin: '0 0 0.35rem 0', fontWeight: 600, color: 'var(--color-carbon)', fontSize: '0.9rem' }}>
+                              Sin compras de insumos registradas
+                            </p>
+                            <p style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', color: 'var(--color-carbon-muted)' }}>
+                              Cuando compres harina 000, queso cremoso u otros insumos, cárgalos con el botón superior para sumar al stock y asentar el egreso.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => setIsPurchaseModalOpen(true)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                backgroundColor: 'var(--color-carbon)',
+                                color: '#FAF8F5',
+                                padding: '0.5rem 1rem',
+                                borderRadius: '6px',
+                                border: 'none',
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <Plus size={14} strokeWidth={1.5} />
+                              <span>Cargar Compra de Insumo</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      opsState.purchases.map((p) => (
+                        <tr key={p.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                          <td style={{ padding: '0.7rem 1rem', color: 'var(--color-carbon-muted)' }}>{p.date}</td>
+                          <td style={{ padding: '0.7rem 1rem', fontWeight: 600 }}>{p.materialName}</td>
+                          <td className="tabular-nums" style={{ padding: '0.7rem 1rem' }}>{p.quantity} {p.unit}</td>
+                          <td className="tabular-nums" style={{ padding: '0.7rem 1rem' }}>${p.unitPrice.toLocaleString('es-AR')}</td>
+                          <td className="tabular-nums" style={{ padding: '0.7rem 1rem', textAlign: 'right', fontWeight: 600, color: '#DC2626' }}>
+                            -${p.totalAmount.toLocaleString('es-AR')}
+                          </td>
+                          <td style={{ padding: '0.7rem 1rem', color: 'var(--color-carbon-muted)' }}>
+                            {p.supplier} {p.notes ? `(${p.notes})` : ''}
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1069,7 +1168,40 @@ export default function AdminDashboard() {
 
             {/* Listado de Vendedores */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {opsState.resellers.map((r) => {
+              {opsState.resellers.length === 0 ? (
+                <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid var(--color-border)', padding: '3.5rem 1.5rem', textAlign: 'center' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'var(--color-cream-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', border: '1px solid var(--color-border)' }}>
+                    <Users size={24} strokeWidth={1.5} color="var(--color-carbon-muted)" />
+                  </div>
+                  <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 600, color: 'var(--color-carbon)', margin: '0 0 0.5rem 0' }}>
+                    Nómina de Vendedores Vacía
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--color-carbon-muted)', maxWidth: '460px', margin: '0 auto 1.5rem auto', lineHeight: 1.5 }}>
+                    No hay vendedores ficticios en el sistema. Registra a tus vendedores de calle indicando su correo de Google (Gmail) para que puedan acceder a su propio panel móvil, firmar el compromiso de rendición y rendir sus ventas diarias.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsNewResellerModalOpen(true)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      backgroundColor: 'var(--color-carbon)',
+                      color: '#FAF8F5',
+                      padding: '0.65rem 1.25rem',
+                      borderRadius: '6px',
+                      border: 'none',
+                      fontSize: '0.86rem',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Plus size={15} strokeWidth={1.5} />
+                    <span>Registrar Primer Vendedor</span>
+                  </button>
+                </div>
+              ) : (
+                opsState.resellers.map((r) => {
                 const assigned = r.assigned;
                 const pendingRendition = assigned
                   ? Math.max(0, assigned.totalRendicion - (assigned.rendicionCobrada || 0))
@@ -1345,7 +1477,8 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 );
-              })}
+              })
+            )}
             </div>
           </div>
         )}
@@ -1385,59 +1518,93 @@ export default function AdminDashboard() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {opsState.resellerNotes.map((note) => {
-                const isPending = note.status === 'pendiente_accion';
-                return (
-                  <div
-                    key={note.id}
+              {opsState.resellerNotes.length === 0 ? (
+                <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid var(--color-border)', padding: '3.5rem 1.5rem', textAlign: 'center' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'var(--color-cream-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', border: '1px solid var(--color-border)' }}>
+                    <MessageSquare size={24} strokeWidth={1.5} color="var(--color-carbon-muted)" />
+                  </div>
+                  <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', fontWeight: 600, color: 'var(--color-carbon)', margin: '0 0 0.5rem 0' }}>
+                    Sin Reportes ni Sugerencias
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--color-carbon-muted)', maxWidth: '440px', margin: '0 auto 1.5rem auto', lineHeight: 1.5 }}>
+                    Aquí verás los mensajes, reportes de venta rápida o pedidos de comercios enviados por tus vendedores desde el portal móvil.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsNoteModalOpen(true)}
                     style={{
-                      backgroundColor: '#FFFFFF',
-                      borderRadius: '8px',
-                      border: isPending ? '1px solid #D97706' : '1px solid var(--color-border)',
-                      padding: '1.25rem'
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      backgroundColor: 'var(--color-carbon)',
+                      color: '#FAF8F5',
+                      padding: '0.6rem 1.15rem',
+                      borderRadius: '6px',
+                      border: 'none',
+                      fontSize: '0.84rem',
+                      fontWeight: 600,
+                      cursor: 'pointer'
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span
+                    <Plus size={15} strokeWidth={1.5} />
+                    <span>Cargar Reporte Manual</span>
+                  </button>
+                </div>
+              ) : (
+                opsState.resellerNotes.map((note) => {
+                  const isPending = note.status === 'pendiente_accion';
+                  return (
+                    <div
+                      key={note.id}
+                      style={{
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: '8px',
+                        border: isPending ? '1px solid #D97706' : '1px solid var(--color-border)',
+                        padding: '1.25rem'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span
+                            style={{
+                              fontSize: '0.68rem',
+                              fontWeight: 700,
+                              textTransform: 'uppercase',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              backgroundColor: note.type === 'venta' ? '#F0FDF4' : note.type === 'pedido_cliente' ? '#EFF6FF' : '#FEF3C7',
+                              color: note.type === 'venta' ? '#15803D' : note.type === 'pedido_cliente' ? '#2563EB' : '#B45309'
+                            }}
+                          >
+                            {note.type === 'venta' ? 'Reporte Venta' : note.type === 'pedido_cliente' ? 'Pedido Comercio' : 'Sugerencia'}
+                          </span>
+                          <strong style={{ fontSize: '0.92rem', color: 'var(--color-carbon)' }}>{note.resellerName}</strong>
+                          <span style={{ fontSize: '0.76rem', color: 'var(--color-carbon-subtle)' }}>({note.date})</span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => toggleResellerNoteStatus(note.id)}
                           style={{
-                            fontSize: '0.68rem',
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            backgroundColor: note.type === 'venta' ? '#F0FDF4' : note.type === 'pedido_cliente' ? '#EFF6FF' : '#FEF3C7',
-                            color: note.type === 'venta' ? '#15803D' : note.type === 'pedido_cliente' ? '#2563EB' : '#B45309'
+                            fontSize: '0.74rem',
+                            color: isPending ? '#B45309' : 'var(--color-carbon-muted)',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontWeight: 600
                           }}
                         >
-                          {note.type === 'venta' ? 'Reporte Venta' : note.type === 'pedido_cliente' ? 'Pedido Comercio' : 'Sugerencia'}
-                        </span>
-                        <strong style={{ fontSize: '0.92rem', color: 'var(--color-carbon)' }}>{note.resellerName}</strong>
-                        <span style={{ fontSize: '0.76rem', color: 'var(--color-carbon-subtle)' }}>({note.date})</span>
+                          {isPending ? 'Marcar como Revisado' : 'Reabrir'}
+                        </button>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => toggleResellerNoteStatus(note.id)}
-                        style={{
-                          fontSize: '0.74rem',
-                          color: isPending ? '#B45309' : 'var(--color-carbon-muted)',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontWeight: 600
-                        }}
-                      >
-                        {isPending ? 'Marcar como Revisado' : 'Reabrir'}
-                      </button>
+                      <p style={{ fontSize: '0.88rem', color: 'var(--color-carbon)', lineHeight: 1.5, margin: 0 }}>
+                        "{note.content}"
+                      </p>
                     </div>
-
-                    <p style={{ fontSize: '0.88rem', color: 'var(--color-carbon)', lineHeight: 1.5, margin: 0 }}>
-                      "{note.content}"
-                    </p>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
         )}
@@ -1477,77 +1644,111 @@ export default function AdminDashboard() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {opsState.orders.map((order) => {
-                const getStatusColor = (s) => {
-                  if (s === 'entregado_cobrado') return { bg: '#F0FDF4', color: '#15803D', label: 'Entregado y Cobrado' };
-                  if (s === 'en_reparto') return { bg: '#EFF6FF', color: '#2563EB', label: 'En Reparto' };
-                  if (s === 'en_elaboracion') return { bg: '#FEF3C7', color: '#B45309', label: 'En Elaboración' };
-                  return { bg: '#F3F4F6', color: '#4B5563', label: 'Pendiente' };
-                };
-                const st = getStatusColor(order.status);
-
-                return (
-                  <div
-                    key={order.id}
+              {opsState.orders.length === 0 ? (
+                <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid var(--color-border)', padding: '3.5rem 1.5rem', textAlign: 'center' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'var(--color-cream-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', border: '1px solid var(--color-border)' }}>
+                    <ShoppingBag size={24} strokeWidth={1.5} color="var(--color-carbon-muted)" />
+                  </div>
+                  <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', fontWeight: 600, color: 'var(--color-carbon)', margin: '0 0 0.5rem 0' }}>
+                    No hay pedidos registrados
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--color-carbon-muted)', maxWidth: '440px', margin: '0 auto 1.5rem auto', lineHeight: 1.5 }}>
+                    Registra pedidos directos de almacenes, kioscos o clientes particulares para coordinar su elaboración y entrega.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsOrderModalOpen(true)}
                     style={{
-                      backgroundColor: '#FFFFFF',
-                      borderRadius: '8px',
-                      border: '1px solid var(--color-border)',
-                      padding: '1.25rem',
-                      display: 'flex',
-                      justifyContent: 'space-between',
+                      display: 'inline-flex',
                       alignItems: 'center',
-                      flexWrap: 'wrap',
-                      gap: '1rem'
+                      gap: '6px',
+                      backgroundColor: 'var(--color-carbon)',
+                      color: '#FAF8F5',
+                      padding: '0.6rem 1.15rem',
+                      borderRadius: '6px',
+                      border: 'none',
+                      fontSize: '0.84rem',
+                      fontWeight: 600,
+                      cursor: 'pointer'
                     }}
                   >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-carbon-muted)' }}>{order.id}</span>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: st.bg, color: st.color }}>
-                          {st.label}
-                        </span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--color-carbon-subtle)' }}>({order.date})</span>
+                    <Plus size={15} strokeWidth={1.5} />
+                    <span>Cargar Primer Pedido</span>
+                  </button>
+                </div>
+              ) : (
+                opsState.orders.map((order) => {
+                  const getStatusColor = (s) => {
+                    if (s === 'entregado_cobrado') return { bg: '#F0FDF4', color: '#15803D', label: 'Entregado y Cobrado' };
+                    if (s === 'en_reparto') return { bg: '#EFF6FF', color: '#2563EB', label: 'En Reparto' };
+                    if (s === 'en_elaboracion') return { bg: '#FEF3C7', color: '#B45309', label: 'En Elaboración' };
+                    return { bg: '#F3F4F6', color: '#4B5563', label: 'Pendiente' };
+                  };
+                  const st = getStatusColor(order.status);
+
+                  return (
+                    <div
+                      key={order.id}
+                      style={{
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: '8px',
+                        border: '1px solid var(--color-border)',
+                        padding: '1.25rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '1rem'
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '4px' }}>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-carbon-muted)' }}>{order.id}</span>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: st.bg, color: st.color }}>
+                            {st.label}
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--color-carbon-subtle)' }}>({order.date})</span>
+                        </div>
+                        <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-carbon)', margin: 0 }}>
+                          {order.customerName}
+                        </h4>
+                        <div style={{ fontSize: '0.82rem', color: 'var(--color-carbon-muted)', marginTop: '2px' }}>
+                          {order.itemsSummary}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-carbon-subtle)', marginTop: '2px' }}>
+                          {order.deliveryType === 'pickup' ? 'Retiro en obrador' : `Envío: ${order.address}`} · Tel: {order.phone}
+                        </div>
                       </div>
-                      <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-carbon)', margin: 0 }}>
-                        {order.customerName}
-                      </h4>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--color-carbon-muted)', marginTop: '2px' }}>
-                        {order.itemsSummary}
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--color-carbon-subtle)', marginTop: '2px' }}>
-                        {order.deliveryType === 'pickup' ? 'Retiro en obrador' : `Envío: ${order.address}`} · Tel: {order.phone}
+
+                      <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                        <div className="tabular-nums" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-carbon)' }}>
+                          ${order.total.toLocaleString('es-AR')}
+                        </div>
+
+                        {/* Selector rápido de estado */}
+                        <select
+                          value={order.status}
+                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                          style={{
+                            fontSize: '0.78rem',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            border: '1px solid var(--color-border)',
+                            backgroundColor: '#FFFFFF',
+                            color: 'var(--color-carbon)',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <option value="pendiente">Pendiente</option>
+                          <option value="en_elaboracion">En Elaboración</option>
+                          <option value="en_reparto">En Reparto</option>
+                          <option value="entregado_cobrado">Entregado y Cobrado</option>
+                        </select>
                       </div>
                     </div>
-
-                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
-                      <div className="tabular-nums" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-carbon)' }}>
-                        ${order.total.toLocaleString('es-AR')}
-                      </div>
-
-                      {/* Selector rápido de estado */}
-                      <select
-                        value={order.status}
-                        onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                        style={{
-                          fontSize: '0.78rem',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          border: '1px solid var(--color-border)',
-                          backgroundColor: '#FFFFFF',
-                          color: 'var(--color-carbon)',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <option value="pendiente">Pendiente</option>
-                        <option value="en_elaboracion">En Elaboración</option>
-                        <option value="en_reparto">En Reparto</option>
-                        <option value="entregado_cobrado">Entregado y Cobrado</option>
-                      </select>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
         )}
@@ -1644,38 +1845,65 @@ export default function AdminDashboard() {
               <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', margin: 0 }}>Asignar Mercadería a Vendedor</h3>
               <button onClick={() => setIsAssignModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
             </div>
-            <form onSubmit={handleConfirmAssignment} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Vendedor:</label>
-                <select value={assignTargetReseller} onChange={(e) => setAssignTargetReseller(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
-                  {opsState.resellers.map((r) => (
-                    <option key={r.id} value={r.id}>{r.name} ({r.zone})</option>
-                  ))}
-                </select>
+            {opsState.resellers.length === 0 ? (
+              <div style={{ padding: '1.5rem', backgroundColor: 'var(--color-cream-light)', border: '1px solid var(--color-border)', borderRadius: '6px', textAlign: 'center' }}>
+                <p style={{ color: 'var(--color-carbon)', fontSize: '0.88rem', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
+                  No tienes vendedores registrados todavía. Primero da de alta al menos un vendedor en la pestaña <strong>Vendedores</strong> antes de asignarle mercadería.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAssignModalOpen(false);
+                    setIsNewResellerModalOpen(true);
+                  }}
+                  style={{
+                    backgroundColor: 'var(--color-carbon)',
+                    color: '#FAF8F5',
+                    padding: '0.6rem 1.2rem',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  + Registrar Primer Vendedor
+                </button>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.4rem' }}>
+            ) : (
+              <form onSubmit={handleConfirmAssignment} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Pizzetas 50g:</label>
-                  <input type="number" min="0" value={assignPizzetas} onChange={(e) => setAssignPizzetas(e.target.value)} style={{ width: '100%', padding: '0.45rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Vendedor:</label>
+                  <select value={assignTargetReseller} onChange={(e) => setAssignTargetReseller(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                    {opsState.resellers.map((r) => (
+                      <option key={r.id} value={r.id}>{r.name} ({r.zone})</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.4rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Pizzetas 50g:</label>
+                    <input type="number" min="0" value={assignPizzetas} onChange={(e) => setAssignPizzetas(e.target.value)} style={{ width: '100%', padding: '0.45rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Paq x10:</label>
+                    <input type="number" min="0" value={assignPaquetes10} onChange={(e) => setAssignPaquetes10(e.target.value)} style={{ width: '100%', padding: '0.45rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Paq x2 Gdes:</label>
+                    <input type="number" min="0" value={assignPaquetesGrandes} onChange={(e) => setAssignPaquetesGrandes(e.target.value)} style={{ width: '100%', padding: '0.45rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                  </div>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Paq x10:</label>
-                  <input type="number" min="0" value={assignPaquetes10} onChange={(e) => setAssignPaquetes10(e.target.value)} style={{ width: '100%', padding: '0.45rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Turno / Referencia:</label>
+                  <input type="text" value={assignNote} onChange={(e) => setAssignNote(e.target.value)} placeholder="ej: Turno Mañana / Tarde" style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Paq x2 Gdes:</label>
-                  <input type="number" min="0" value={assignPaquetesGrandes} onChange={(e) => setAssignPaquetesGrandes(e.target.value)} style={{ width: '100%', padding: '0.45rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                <div style={{ fontSize: '0.74rem', color: 'var(--color-carbon-muted)', backgroundColor: 'var(--color-cream-light)', padding: '6px', borderRadius: '4px' }}>
+                  Rendición esperada: ${(assignPizzetas * 400 + assignPaquetes10 * 2000 + assignPaquetesGrandes * 1800).toLocaleString('es-AR')}
                 </div>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Turno / Referencia:</label>
-                <input type="text" value={assignNote} onChange={(e) => setAssignNote(e.target.value)} placeholder="ej: Turno Mañana / Tarde" style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
-              </div>
-              <div style={{ fontSize: '0.74rem', color: 'var(--color-carbon-muted)', backgroundColor: 'var(--color-cream-light)', padding: '6px', borderRadius: '4px' }}>
-                Rendición esperada: ${(assignPizzetas * 400 + assignPaquetes10 * 2000 + assignPaquetesGrandes * 1800).toLocaleString('es-AR')}
-              </div>
-              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Confirmar Asignación</button>
-            </form>
+                <button type="submit" style={{ marginTop: '0.5rem', padding: '0.65rem', borderRadius: '6px', backgroundColor: 'var(--color-carbon)', color: '#FAF8F5', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Confirmar Asignación</button>
+              </form>
+            )}
           </div>
         </div>
       )}
@@ -1765,9 +1993,13 @@ export default function AdminDashboard() {
               <div>
                 <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: 'var(--color-carbon-muted)', marginBottom: '4px' }}>Vendedor que reporta:</label>
                 <select value={noteResellerId} onChange={(e) => setNoteResellerId(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
-                  {opsState.resellers.map((r) => (
-                    <option key={r.id} value={r.id}>{r.name}</option>
-                  ))}
+                  {opsState.resellers.length === 0 ? (
+                    <option value="">Administración / General (Sin vendedor)</option>
+                  ) : (
+                    opsState.resellers.map((r) => (
+                      <option key={r.id} value={r.id}>{r.name}</option>
+                    ))
+                  )}
                 </select>
               </div>
               <div>

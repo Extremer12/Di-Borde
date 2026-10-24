@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   loadAdminOpsState,
   saveAdminOpsState,
-  calculateResellerAssignment
+  calculateResellerAssignment,
+  resetAdminOpsStateToClean
 } from '../state/bordeOpsStore.js';
 import {
   supabase,
@@ -807,6 +808,11 @@ export function AuthProvider({ children }) {
     }));
   };
 
+  const resetOpsDataToClean = () => {
+    const clean = resetAdminOpsStateToClean();
+    setOpsState(clean);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -837,6 +843,7 @@ export function AuthProvider({ children }) {
         updateOrderStatus,
         addProductionStock,
         signInWithGoogle,
+        resetOpsDataToClean,
         ADMIN_EMAIL
       }}
     >

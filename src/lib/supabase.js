@@ -171,9 +171,9 @@ export async function fetchAllDataFromSupabase() {
     return {
       rawMaterials,
       stock: Object.keys(stock).length > 0 ? stock : {
-        'pizzeta-con-queso': 120,
-        'paquete-10-prepizzetas': 48,
-        'paquete-2-prepizzas-grandes': 32
+        'pizzeta-con-queso': 0,
+        'paquete-10-prepizzetas': 0,
+        'paquete-2-prepizzas-grandes': 0
       },
       resellers,
       resellerNotes,
