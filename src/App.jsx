@@ -27,11 +27,24 @@ function MainLayout() {
 
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const { setActiveChannel, setIsDrawerOpen, isDrawerOpen } = useCart();
-  const { currentUser } = useAuth();
+  const { currentUser, authLoading } = useAuth();
 
   useEffect(() => {
     const handleHashChange = () => {
-      let hash = window.location.hash.replace('#', '') || '/';
+      let rawHash = window.location.hash.replace('#', '') || '/';
+
+      // Si el hash contiene parámetros de OAuth (ej: access_token= o code=), descartar y recuperar ruta objetivo
+      if (rawHash.includes('access_token=') || rawHash.includes('code=')) {
+        const saved = sessionStorage.getItem('di_borde_auth_redirect') || '/admin';
+        rawHash = saved;
+      }
+
+      // Quitar cualquier query string adherido al hash (ej: /admin?code=...)
+      if (rawHash.includes('?')) {
+        rawHash = rawHash.split('?')[0];
+      }
+
+      let hash = rawHash || '/';
 
       if (hash === '/preventistas') {
         window.location.hash = '/vendedor';
@@ -92,10 +105,55 @@ function MainLayout() {
     currentRoute === '/vendedores';
 
   const renderCurrentView = () => {
+    // Si la autenticación se está verificando y el usuario intenta acceder a una ruta de gestión
+    if (authLoading && isPortalRoute) {
+      return (
+        <div
+          style={{
+            minHeight: '75vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '1.25rem',
+            backgroundColor: 'var(--color-cream)',
+            padding: '2rem'
+          }}
+        >
+          <div
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              border: '3px solid var(--color-border)',
+              borderTopColor: 'var(--color-primary, #C83820)',
+              animation: 'spin 0.8s linear infinite'
+            }}
+          />
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--color-carbon)' }}>
+              Verificando credenciales DiBorde...
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--color-carbon-muted)', marginTop: '4px' }}>
+              Validando sesión administrativa con Supabase
+            </div>
+          </div>
+          <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+        </div>
+      );
+    }
+
     switch (currentRoute) {
       case '/vendedor':
       case '/vendedores':
-        return <ResellerDashboard />;
+        if (currentUser?.role === 'admin') {
+          return <AdminDashboard />;
+        }
+        return currentUser && currentUser.role === 'reseller' ? (
+          <ResellerDashboard />
+        ) : (
+          <PortalLoginView />
+        );
       case '/admin':
       case '/portal':
       case '/gestion':

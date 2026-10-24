@@ -57,7 +57,7 @@ export default function AdminDashboard() {
   const isAuthorizedAdmin =
     currentUser &&
     currentUser.role === 'admin' &&
-    currentUser.email?.toLowerCase() === ADMIN_EMAIL?.toLowerCase();
+    currentUser.email?.toLowerCase().trim() === ADMIN_EMAIL?.toLowerCase().trim();
 
   const [activeTab, setActiveTab] = useState('caja'); // 'caja' | 'insumos' | 'vendedores' | 'sugerencias' | 'pedidos'
 

@@ -26,7 +26,7 @@ export default function PortalLoginView() {
   const handleGoogleLogin = async () => {
     setLoadingGoogle(true);
     try {
-      await signInWithGoogle('/portal');
+      await signInWithGoogle('/admin');
     } catch (e) {
       console.error('Google Sign-in exception', e);
       setLoadingGoogle(false);

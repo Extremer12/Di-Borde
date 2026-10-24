@@ -12,8 +12,17 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 
 // Google Sign-In con Supabase Auth
 export async function signInWithGoogle(redirectToRoute = '/admin') {
-  const origin = window.location.origin;
-  const targetUrl = `${origin}/#${redirectToRoute}`;
+  try {
+    if (redirectToRoute) {
+      sessionStorage.setItem('di_borde_auth_redirect', redirectToRoute);
+      localStorage.setItem('di_borde_auth_redirect_backup', redirectToRoute);
+    }
+  } catch (e) {
+    console.warn('[Supabase Auth] Storage access warning:', e);
+  }
+
+  // Google OAuth y Supabase URL Configuration requieren un origen limpio sin hash '#'
+  const targetUrl = window.location.origin;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',

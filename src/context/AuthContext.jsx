@@ -88,6 +88,8 @@ export function AuthProvider({ children }) {
     return null;
   });
 
+  const [authLoading, setAuthLoading] = useState(true);
+
   // Guardar usuario en localStorage
   useEffect(() => {
     if (currentUser) {
@@ -96,6 +98,69 @@ export function AuthProvider({ children }) {
       localStorage.removeItem(AUTH_STORAGE_KEY);
     }
   }, [currentUser]);
+
+  // Manejador centralizado para autenticar una sesión y aplicar redirección a la ruta objetivo
+  const applyAuthenticatedSession = (sessionUser, currentResellers = opsState.resellers) => {
+    if (!sessionUser) return null;
+
+    const email = (sessionUser.email || '').toLowerCase().trim();
+    const resolved = resolveUserRole(email, currentResellers);
+
+    if (resolved) {
+      const fullUser = {
+        ...resolved,
+        avatarUrl: sessionUser.user_metadata?.avatar_url || null,
+        googleName: sessionUser.user_metadata?.full_name || null
+      };
+
+      setCurrentUser(fullUser);
+      try {
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(fullUser));
+      } catch (e) {
+        console.warn('[AuthContext] LocalStorage save warning:', e);
+      }
+
+      // Redirigir a la ruta que el usuario intentó acceder originalmente (ej: /admin o /vendedor)
+      let targetRoute = null;
+      try {
+        targetRoute =
+          sessionStorage.getItem('di_borde_auth_redirect') ||
+          localStorage.getItem('di_borde_auth_redirect_backup');
+        if (targetRoute) {
+          sessionStorage.removeItem('di_borde_auth_redirect');
+          localStorage.removeItem('di_borde_auth_redirect_backup');
+        }
+      } catch (e) {
+        console.warn('[AuthContext] SessionStorage read warning:', e);
+      }
+
+      // Si el rol es admin y no había ruta específica guardada, o estaba en inicio/callback
+      if (!targetRoute && fullUser.role === 'admin') {
+        const hash = window.location.hash.replace('#', '') || '/';
+        if (hash === '/' || hash.includes('code=') || hash.includes('access_token')) {
+          targetRoute = '/admin';
+        }
+      }
+
+      if (targetRoute) {
+        const cleanUrl = window.location.origin + window.location.pathname + '#' + targetRoute;
+        window.history.replaceState({}, document.title, cleanUrl);
+        window.location.hash = targetRoute;
+      } else if (
+        window.location.search.includes('code=') ||
+        window.location.hash.includes('code=') ||
+        window.location.hash.includes('access_token')
+      ) {
+        const cleanHash = fullUser.role === 'admin' ? '#/admin' : (window.location.hash || '#/');
+        const cleanUrl = window.location.origin + window.location.pathname + cleanHash;
+        window.history.replaceState({}, document.title, cleanUrl);
+        if (cleanHash) window.location.hash = cleanHash.replace('#', '');
+      }
+
+      return fullUser;
+    }
+    return null;
+  };
 
   // Sincronizar datos iniciales desde Supabase y escuchar Google Auth
   useEffect(() => {
@@ -120,23 +185,71 @@ export function AuthProvider({ children }) {
       }
     });
 
-    // 2. Obtener sesión activa existente
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (isMounted && session?.user) {
-        setGoogleUser(session.user);
-      }
-    });
+    // 2. Procesar sesión inicial y Callback de OAuth
+    const initAuth = async () => {
+      try {
+        // A) Buscar código PKCE en search (?code=...) o en hash (#/admin?code=...)
+        const searchParams = new URLSearchParams(window.location.search);
+        let code = searchParams.get('code');
 
-    // 3. Escuchar cambios de autenticación con Google
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (isMounted) {
-        if (session?.user) {
+        if (!code && window.location.hash.includes('code=')) {
+          const qIndex = window.location.hash.indexOf('?');
+          if (qIndex !== -1) {
+            code = new URLSearchParams(window.location.hash.substring(qIndex + 1)).get('code');
+          }
+        }
+
+        if (code) {
+          console.log('[Auth] Intercambiando código PKCE de OAuth por sesión activa...');
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) {
+            console.error('[Auth] Error al intercambiar código PKCE:', error);
+          } else if (data?.session?.user) {
+            console.log('[Auth] Sesión establecida exitosamente para:', data.session.user.email);
+            if (isMounted) {
+              setGoogleUser(data.session.user);
+              applyAuthenticatedSession(data.session.user);
+            }
+          }
+        }
+
+        // B) Obtener sesión activa existente
+        const { data: { session } } = await supabase.auth.getSession();
+        if (isMounted && session?.user) {
           setGoogleUser(session.user);
-        } else if (event === 'SIGNED_OUT') {
-          setGoogleUser(null);
-          setCurrentUser(null);
+          applyAuthenticatedSession(session.user);
+        }
+      } catch (err) {
+        console.warn('[Auth] Error al inicializar sesión:', err);
+      } finally {
+        if (isMounted) {
+          setAuthLoading(false);
+          // Limpiar parámetros query de la URL si quedaron sucios
+          if (window.location.search.includes('code=')) {
+            const cleanUrl = window.location.pathname + (window.location.hash || '');
+            window.history.replaceState({}, document.title, cleanUrl);
+          }
         }
       }
+    };
+
+    initAuth();
+
+    // 3. Escuchar cambios de autenticación con Google
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+
+      if (session?.user) {
+        setGoogleUser(session.user);
+        applyAuthenticatedSession(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        setGoogleUser(null);
+        setCurrentUser(null);
+        try {
+          localStorage.removeItem(AUTH_STORAGE_KEY);
+        } catch (e) {}
+      }
+      setAuthLoading(false);
     });
 
     return () => {
@@ -145,15 +258,11 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Evaluar rol del usuario cada vez que cambia googleUser o la nómina de vendedores
+  // Re-evaluar rol si cambia la nómina de vendedores
   useEffect(() => {
-    if (!googleUser) {
-      return;
-    }
-
+    if (!googleUser) return;
     const email = (googleUser.email || '').toLowerCase().trim();
     const resolved = resolveUserRole(email, opsState.resellers);
-
     if (resolved) {
       setCurrentUser((prev) => ({
         ...resolved,
@@ -702,6 +811,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         currentUser,
+        authLoading,
         opsState,
         login,
         loginAsAdmin,
