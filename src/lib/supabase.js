@@ -98,11 +98,34 @@ export async function fetchAllDataFromSupabase() {
       stock[fs.id] = fs.current_stock;
     });
 
-    // Mapear vendedores con su asignación activa
+    // Mapear vendedores con su asignación activa y su historial completo de jornadas (shifts)
     const assignmentsByReseller = {};
+    const shiftsByReseller = {};
     (assignmentsRes.data || []).forEach((asg) => {
+      const shiftItem = {
+        id: asg.id,
+        resellerId: asg.reseller_id,
+        date: asg.date,
+        pizzetasQueso: asg.pizzetas_queso || 0,
+        paquetes10: asg.paquetes_10 || 0,
+        paquetesGrandes: asg.paquetes_grandes || 0,
+        totalPvp: parseFloat(asg.total_pvp) || 0,
+        totalRendicion: parseFloat(asg.total_rendicion) || 0,
+        gananciaVendedor: parseFloat(asg.ganancia_vendedor) || 0,
+        rendicionCobrada: parseFloat(asg.rendicion_cobrada) || 0,
+        renditionStatus: asg.rendition_status || 'al_dia',
+        notes: asg.notes || '',
+        createdAt: asg.created_at
+      };
+
+      if (!shiftsByReseller[asg.reseller_id]) {
+        shiftsByReseller[asg.reseller_id] = [];
+      }
+      shiftsByReseller[asg.reseller_id].push(shiftItem);
+
       if (!assignmentsByReseller[asg.reseller_id]) {
         assignmentsByReseller[asg.reseller_id] = {
+          id: asg.id,
           pizzetasQueso: asg.pizzetas_queso,
           paquetes10: asg.paquetes_10,
           paquetesGrandes: asg.paquetes_grandes,
@@ -133,7 +156,8 @@ export async function fetchAllDataFromSupabase() {
       debtAmount: parseFloat(r.debt_amount) || 0,
       debtReason: r.debt_reason || null,
       debtDate: r.debt_date || null,
-      assigned: assignmentsByReseller[r.id] || null
+      assigned: assignmentsByReseller[r.id] || null,
+      shifts: shiftsByReseller[r.id] || []
     }));
 
     const resellerNotes = (notesRes.data || []).map((n) => ({
@@ -282,6 +306,29 @@ export async function dbDeleteReseller(resellerId) {
     await supabase.from('di_borde_resellers').delete().eq('id', resellerId);
   } catch (e) {
     console.warn('Delete reseller error', e);
+  }
+}
+
+export async function dbUpsertResellerAssignment(asg) {
+  try {
+    const id = asg.id || `asg-${asg.resellerId || asg.reseller_id}-${Date.now()}`;
+    await supabase.from('di_borde_reseller_assignments').upsert({
+      id,
+      reseller_id: asg.resellerId || asg.reseller_id,
+      date: asg.date || asg.assignedDate || new Date().toLocaleDateString('es-AR'),
+      pizzetas_queso: parseInt(asg.pizzetasQueso ?? asg.pizzetas_queso) || 0,
+      paquetes_10: parseInt(asg.paquetes10 ?? asg.paquetes_10) || 0,
+      paquetes_grandes: parseInt(asg.paquetesGrandes ?? asg.paquetes_grandes) || 0,
+      total_pvp: parseFloat(asg.totalPvp ?? asg.total_pvp) || 0,
+      total_rendicion: parseFloat(asg.totalRendicion ?? asg.total_rendicion) || 0,
+      ganancia_vendedor: parseFloat(asg.gananciaVendedor ?? asg.ganancia_vendedor) || 0,
+      rendicion_cobrada: parseFloat(asg.rendicionCobrada ?? asg.rendicion_cobrada) || 0,
+      rendition_status: asg.renditionStatus || asg.rendition_status || 'debe_rendir',
+      notes: asg.notes || null,
+      updated_at: new Date().toISOString()
+    });
+  } catch (e) {
+    console.warn('Sync reseller assignment error', e);
   }
 }
 

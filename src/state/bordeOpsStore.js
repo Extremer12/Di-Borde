@@ -146,7 +146,7 @@ export function resetAdminOpsStateToClean() {
 
 // Helper para calcular la rendición oficial de una asignación
 export function calculateResellerAssignment(pizzetasQueso = 0, paquetes10 = 0, paquetesGrandes = 0) {
-  const pvp = (pizzetasQueso * 800) + (paquetes10 * 2500) + (paquetesGrandes * 2500);
+  const pvp = (pizzetasQueso * 800) + (paquetes10 * 2500) + (paquetesGrandes * 2600);
   const rendicion = (pizzetasQueso * 400) + (paquetes10 * 2000) + (paquetesGrandes * 1800);
   const ganancia = pvp - rendicion;
 

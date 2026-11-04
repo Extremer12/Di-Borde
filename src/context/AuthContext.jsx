@@ -16,6 +16,7 @@ import {
   dbUpdateResellerNoteStatus,
   dbUpsertReseller,
   dbDeleteReseller,
+  dbUpsertResellerAssignment,
   dbInsertOrder,
   dbUpdateOrderStatus
 } from '../lib/supabase.js';
@@ -529,6 +530,24 @@ export function AuthProvider({ children }) {
     const pG = Math.max(0, parseInt(paquetesGrandes) || 0);
 
     const totals = calculateResellerAssignment(pQ, p10, pG);
+    const assignmentId = `ASG-${Date.now().toString().slice(-6)}`;
+    const dateFormatted = note || `Hoy ${new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} hs`;
+
+    const assignmentObj = {
+      id: assignmentId,
+      resellerId,
+      pizzetasQueso: pQ,
+      paquetes10: p10,
+      paquetesGrandes: pG,
+      totalPvp: totals.totalPvp,
+      totalRendicion: totals.totalRendicion,
+      gananciaVendedor: totals.gananciaVendedor,
+      rendicionCobrada: 0,
+      renditionStatus: 'debe_rendir',
+      assignedDate: dateFormatted,
+      date: new Date().toLocaleDateString('es-AR'),
+      notes: note || ''
+    };
 
     updateOpsState((prev) => {
       // 1. Descontar del stock de producto terminado en el obrador
@@ -538,22 +557,14 @@ export function AuthProvider({ children }) {
         'paquete-2-prepizzas-grandes': Math.max(0, prev.stock['paquete-2-prepizzas-grandes'] - pG)
       };
 
-      // 2. Asignar al vendedor
+      // 2. Asignar al vendedor y registrar en su historial de jornadas
       const updatedResellers = prev.resellers.map((r) => {
         if (r.id !== resellerId) return r;
+        const currentShifts = r.shifts || [];
         return {
           ...r,
-          assigned: {
-            pizzetasQueso: pQ,
-            paquetes10: p10,
-            paquetesGrandes: pG,
-            totalPvp: totals.totalPvp,
-            totalRendicion: totals.totalRendicion,
-            gananciaVendedor: totals.gananciaVendedor,
-            rendicionCobrada: 0,
-            renditionStatus: 'debe_rendir',
-            assignedDate: note || `Hoy ${new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} hs`
-          }
+          assigned: assignmentObj,
+          shifts: [assignmentObj, ...currentShifts.filter((s) => s.id !== assignmentId)]
         };
       });
 
@@ -564,6 +575,9 @@ export function AuthProvider({ children }) {
       };
     });
 
+    // Sincronizar asignación en Supabase
+    dbUpsertResellerAssignment(assignmentObj);
+
     return { success: true };
   };
 
@@ -572,6 +586,7 @@ export function AuthProvider({ children }) {
     if (pay <= 0) return;
 
     const dateStr = new Date().toLocaleDateString('es-AR');
+    let targetAssignmentToSync = null;
 
     updateOpsState((prev) => {
       let resellerName = 'Vendedor';
@@ -587,15 +602,30 @@ export function AuthProvider({ children }) {
         let status = 'parcial';
         if (newPaid >= target) status = 'al_dia';
 
+        const updatedAssigned = r.assigned
+          ? {
+              ...r.assigned,
+              rendicionCobrada: newPaid,
+              renditionStatus: status
+            }
+          : null;
+
+        if (updatedAssigned) {
+          targetAssignmentToSync = updatedAssigned;
+        }
+
+        const currentShifts = r.shifts || [];
+        const updatedShifts = currentShifts.map((s) => {
+          if (updatedAssigned && s.id === updatedAssigned.id) {
+            return updatedAssigned;
+          }
+          return s;
+        });
+
         return {
           ...r,
-          assigned: r.assigned
-            ? {
-                ...r.assigned,
-                rendicionCobrada: newPaid,
-                renditionStatus: status
-              }
-            : null
+          assigned: updatedAssigned,
+          shifts: updatedShifts
         };
       });
 
@@ -610,12 +640,18 @@ export function AuthProvider({ children }) {
         reference: resellerId
       };
 
+      dbInsertCashflow(newIncome);
+
       return {
         ...prev,
         resellers: updatedResellers,
         cashflow: [newIncome, ...prev.cashflow]
       };
     });
+
+    if (targetAssignmentToSync) {
+      dbUpsertResellerAssignment(targetAssignmentToSync);
+    }
   };
 
   const updateResellerDebt = (resellerId, debtAmount, debtReason) => {
@@ -759,6 +795,8 @@ export function AuthProvider({ children }) {
       resellerNotes: [newNote, ...prev.resellerNotes]
     }));
 
+    dbInsertResellerNote(newNote);
+
     return { success: true };
   };
 
@@ -794,20 +832,26 @@ export function AuthProvider({ children }) {
       resellerNotes: [newNote, ...prev.resellerNotes]
     }));
 
+    dbInsertResellerNote(newNote);
+
     return { success: true };
   };
 
   const toggleResellerNoteStatus = (noteId) => {
+    let nextStatus = 'leido';
     updateOpsState((prev) => ({
       ...prev,
       resellerNotes: prev.resellerNotes.map((n) => {
         if (n.id !== noteId) return n;
+        nextStatus = n.status === 'leido' ? 'pendiente_accion' : 'leido';
         return {
           ...n,
-          status: n.status === 'leido' ? 'pendiente_accion' : 'leido'
+          status: nextStatus
         };
       })
     }));
+
+    dbUpdateResellerNoteStatus(noteId, nextStatus);
   };
 
   // --------------------------------------------------------------------------
