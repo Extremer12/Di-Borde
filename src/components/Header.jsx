@@ -419,30 +419,54 @@ export default function Header({ currentRoute, setCurrentRoute, onOpenOrderModal
             </button>
           </div>
 
-          <div style={{ marginTop: '0.35rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.35rem' }}>
             <a
-              href="#/portal"
+              href="#/vendedor"
               onClick={(e) => {
                 e.preventDefault();
-                navigate('/portal');
+                navigate('/vendedor');
               }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
-                width: '100%',
-                padding: '9px 12px',
+                padding: '9px 10px',
                 borderRadius: '6px',
-                backgroundColor: 'var(--color-carbon)',
+                backgroundColor: 'var(--color-carbon, #1C1917)',
                 color: '#FAF8F5',
-                fontSize: '0.82rem',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                textDecoration: 'none'
+              }}
+            >
+              <Package size={14} strokeWidth={1.5} />
+              <span>Portal Vendedores</span>
+            </a>
+
+            <a
+              href="#/admin"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/admin');
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '9px 10px',
+                borderRadius: '6px',
+                backgroundColor: 'transparent',
+                color: 'var(--color-carbon, #1C1917)',
+                border: '1px solid var(--color-border, #E7E5E4)',
+                fontSize: '0.8rem',
                 fontWeight: 600,
                 textDecoration: 'none'
               }}
             >
               <Shield size={14} strokeWidth={1.5} />
-              <span>Acceso Comercial & Administración</span>
+              <span>Gestión Admin</span>
             </a>
           </div>
         </div>

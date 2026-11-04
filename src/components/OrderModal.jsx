@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext.jsx';
-import { X, Store, Bike, ArrowRight, MessageSquare, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
+import { useAuth } from '../context/AuthContext.jsx';
+import { X, Store, Bike, ArrowRight, MessageSquare, Plus, Minus, Trash2, ShoppingBag, CheckCircle2, ExternalLink } from 'lucide-react';
 
 export default function OrderModal({ isOpen, onClose }) {
   const {
@@ -20,6 +21,8 @@ export default function OrderModal({ isOpen, onClose }) {
     clearCart
   } = useCart();
 
+  const { createOrder } = useAuth();
+
   const [deliveryType, setDeliveryType] = useState('pickup'); // 'pickup' | 'delivery'
   const [customer, setCustomer] = useState({
     name: '',
@@ -27,6 +30,7 @@ export default function OrderModal({ isOpen, onClose }) {
     address: '',
     notes: ''
   });
+  const [submittedOrder, setSubmittedOrder] = useState(null);
 
   if (!isOpen) return null;
 
@@ -34,13 +38,50 @@ export default function OrderModal({ isOpen, onClose }) {
 
   const handleSendOrder = (e) => {
     e.preventDefault();
-    const waUrl = buildWhatsAppUrl(customer, deliveryType, activeChannel);
+    if (!customer.name.trim()) return;
+
+    const orderId = `PED-${Date.now().toString().slice(-4)}`;
+    const itemsSummary = items
+      .map((it) => `${it.quantity}x ${it.product.name}`)
+      .join(', ');
+
+    // 1. Guardar formalmente en el sistema web y Supabase
+    createOrder({
+      id: orderId,
+      customerName: customer.name.trim(),
+      phone: customer.phone.trim(),
+      address: deliveryType === 'pickup' ? 'Retiro en Obrador (Chimbas)' : (customer.address || '').trim(),
+      itemsSummary,
+      total: currentTotal,
+      deliveryType,
+      notes: (customer.notes || '').trim()
+    });
+
+    // 2. Generar y abrir WhatsApp oficial con código de pedido
+    const waUrl = buildWhatsAppUrl(customer, deliveryType, activeChannel, orderId);
     window.open(waUrl, '_blank');
+
+    // 3. Registrar estado de éxito en el modal y vaciar carrito
+    setSubmittedOrder({
+      id: orderId,
+      total: currentTotal,
+      customerName: customer.name.trim(),
+      deliveryType,
+      waUrl
+    });
+
+    clearCart();
+  };
+
+  const handleCloseModal = () => {
+    setSubmittedOrder(null);
+    onClose();
   };
 
   const handleClearAndClose = () => {
     if (window.confirm('¿Seguro que querés cancelar y vaciar el pedido actual?')) {
       clearCart();
+      setSubmittedOrder(null);
       onClose();
     }
   };
@@ -117,8 +158,120 @@ export default function OrderModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Empty state */}
-        {items.length === 0 ? (
+        {/* Caso: Pedido ya enviado y registrado con éxito */}
+        {submittedOrder ? (
+          <div style={{ textAlign: 'center', padding: '1.75rem 0.5rem' }}>
+            <div
+              style={{
+                width: '54px',
+                height: '54px',
+                borderRadius: '50%',
+                backgroundColor: '#DCFCE7',
+                color: '#15803D',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1rem'
+              }}
+            >
+              <CheckCircle2 size={30} strokeWidth={2} />
+            </div>
+
+            <span className="eyebrow-kicker" style={{ color: '#15803D' }}>REGISTRO EXITOSO</span>
+            <h3
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '1.4rem',
+                fontWeight: 600,
+                color: 'var(--color-carbon)',
+                margin: '0.2rem 0 0.5rem 0'
+              }}
+            >
+              ¡Pedido Enviado a Di Borde!
+            </h3>
+
+            <div
+              style={{
+                display: 'inline-block',
+                backgroundColor: 'var(--color-cream-light)',
+                border: '1px solid var(--color-border)',
+                padding: '6px 14px',
+                borderRadius: '999px',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                color: 'var(--color-carbon)',
+                marginBottom: '1rem',
+                letterSpacing: '0.04em'
+              }}
+            >
+              CÓDIGO: {submittedOrder.id}
+            </div>
+
+            <p style={{ fontSize: '0.88rem', color: 'var(--color-carbon-muted)', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
+              Tu pedido para <strong>{submittedOrder.customerName}</strong> por un total de{' '}
+              <strong>${submittedOrder.total.toLocaleString('es-AR')}</strong> ya quedó guardado en el sistema administrativo web de Di Borde y abierto en WhatsApp para coordinar la entrega.
+            </p>
+
+            <div
+              style={{
+                backgroundColor: '#F0FDF4',
+                border: '1px solid #BBF7D0',
+                borderRadius: '6px',
+                padding: '0.75rem',
+                fontSize: '0.76rem',
+                color: '#166534',
+                marginBottom: '1.5rem',
+                textAlign: 'left'
+              }}
+            >
+              ✓ Pedido guardado en base de datos oficial<br />
+              ✓ Notificación generada para WhatsApp de la Administración<br />
+              ✓ Modalidad: {submittedOrder.deliveryType === 'pickup' ? 'Retiro en Obrador (Chimbas)' : 'Envío a Domicilio'}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+              <a
+                href={submittedOrder.waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  backgroundColor: '#15803D',
+                  color: '#FAF8F5',
+                  padding: '11px',
+                  borderRadius: '6px',
+                  fontSize: '0.88rem',
+                  fontWeight: 600,
+                  textDecoration: 'none'
+                }}
+              >
+                <MessageSquare size={16} strokeWidth={1.5} />
+                <span>Volver a abrir WhatsApp</span>
+                <ExternalLink size={14} strokeWidth={1.5} />
+              </a>
+
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                style={{
+                  backgroundColor: 'var(--color-carbon)',
+                  color: '#FAF8F5',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '11px',
+                  fontSize: '0.86rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Listo, volver a la tienda
+              </button>
+            </div>
+          </div>
+        ) : items.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
             <div
               style={{

@@ -1,5 +1,7 @@
 /* Base and Reset Styles for Don Borde (Dulcepan Aesthetic) */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -44,7 +46,9 @@ body {
 }
 
 /* Editorial Serif Headings */
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   font-family: var(--font-serif);
   font-weight: 700;
   color: var(--color-carbon);
@@ -94,7 +98,9 @@ button {
   transition: all var(--transition-fast);
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   font-family: var(--font-body);
   font-size: 0.95rem;
   color: var(--color-carbon);
@@ -106,7 +112,9 @@ input, select, textarea {
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-glow);
 }
@@ -228,7 +236,8 @@ img {
   width: 100%;
 }
 
-.btn:disabled, .btn[disabled] {
+.btn:disabled,
+.btn[disabled] {
   opacity: 0.55;
   cursor: not-allowed;
   transform: none !important;
@@ -350,6 +359,7 @@ img {
     opacity: 0;
     transform: translateY(16px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -357,8 +367,13 @@ img {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* ======================================================== */
@@ -389,7 +404,10 @@ img {
 
 /* Mobile inputs (prevent iOS Safari zoom) */
 @media (max-width: 768px) {
-  input, select, textarea {
+
+  input,
+  select,
+  textarea {
     font-size: 16px !important;
   }
 
@@ -398,4 +416,3 @@ img {
     padding-right: 1rem;
   }
 }
-

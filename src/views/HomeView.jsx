@@ -388,7 +388,7 @@ export default function HomeView() {
                   Escribinos para coordinar tandas, retiro en el día o consultar precios para tu comercio.
                 </p>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                   <button
                     type="button"
                     onClick={handleOpenResellerWhatsApp}
@@ -410,8 +410,31 @@ export default function HomeView() {
                     }}
                   >
                     <MessageCircle size={16} strokeWidth={1.5} />
-                    <span>Consultar por WhatsApp</span>
+                    <span>Quiero ser Revendedor (WhatsApp)</span>
                   </button>
+
+                  <a
+                    href="#/vendedor"
+                    style={{
+                      width: '100%',
+                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                      color: '#FAF8F5',
+                      border: '1px solid rgba(255, 255, 255, 0.18)',
+                      borderRadius: '6px',
+                      padding: '0.75rem 1.25rem',
+                      fontSize: '0.84rem',
+                      fontWeight: 500,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      textDecoration: 'none',
+                      transition: 'all var(--transition-fast)'
+                    }}
+                  >
+                    <Package size={15} strokeWidth={1.5} color="#4ADE80" />
+                    <span>¿Ya vendés Di Borde? Ingresar a tu Portal</span>
+                  </a>
                 </div>
 
                 <div style={{ fontSize: '0.74rem', color: '#A8A29E', marginTop: '1.25rem', textAlign: 'center' }}>

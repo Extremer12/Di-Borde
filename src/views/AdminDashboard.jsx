@@ -1716,8 +1716,33 @@ export default function AdminDashboard() {
                           {order.itemsSummary}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--color-carbon-subtle)', marginTop: '2px' }}>
-                          {order.deliveryType === 'pickup' ? 'Retiro en obrador' : `Envío: ${order.address}`} · Tel: {order.phone}
+                          {order.deliveryType === 'pickup' ? 'Retiro en obrador (Chimbas)' : `Envío: ${order.address}`} {order.phone ? `· Tel: ${order.phone}` : ''}
                         </div>
+                        {order.phone && (
+                          <div style={{ marginTop: '5px' }}>
+                            <a
+                              href={`https://wa.me/${order.phone.replace(/\D/g, '').startsWith('54') ? order.phone.replace(/\D/g, '') : `549${order.phone.replace(/\D/g, '')}`}?text=${encodeURIComponent(`¡Hola ${order.customerName}! Te escribimos de Di Borde respecto a tu pedido #${order.id}.`)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontSize: '0.74rem',
+                                color: '#15803D',
+                                backgroundColor: '#F0FDF4',
+                                padding: '3px 8px',
+                                borderRadius: '4px',
+                                textDecoration: 'none',
+                                fontWeight: 600,
+                                border: '1px solid #BBF7D0'
+                              }}
+                            >
+                              <Phone size={11} strokeWidth={1.5} />
+                              <span>Contactar cliente por WhatsApp</span>
+                            </a>
+                          </div>
+                        )}
                       </div>
 
                       <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>

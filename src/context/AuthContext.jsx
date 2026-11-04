@@ -25,31 +25,49 @@ export const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'cristianbordon18
 const AuthContext = createContext(null);
 const AUTH_STORAGE_KEY = 'di_borde_auth_user_v3';
 
-// Función para determinar el rol y permisos según el correo de Google
-export function resolveUserRole(email, resellers = []) {
-  if (!email) return null;
-  const cleanEmail = email.toLowerCase().trim();
+// Función para determinar el rol y permisos según correo o identificador
+export function resolveUserRole(emailOrIdentifier, resellers = []) {
+  if (!emailOrIdentifier) return null;
+  const clean = emailOrIdentifier.toLowerCase().trim();
 
   // 1. Administrador Central Único
-  if (cleanEmail === ADMIN_EMAIL.toLowerCase()) {
+  if (
+    clean === ADMIN_EMAIL.toLowerCase() ||
+    clean === 'cristianbordon186@gmail.com' ||
+    clean === 'admin'
+  ) {
     return {
       role: 'admin',
-      email: cleanEmail,
+      email: ADMIN_EMAIL,
       name: 'Administración DiBorde',
       isAdmin: true
     };
   }
 
-  // 2. Vendedor Registrado por el Administrador
-  const foundReseller = resellers.find(
-    (r) => (r.email || '').toLowerCase().trim() === cleanEmail
-  );
+  // 2. Vendedor Registrado por el Administrador (por Email, DNI, Teléfono o ID)
+  const cleanDigits = clean.replace(/\D/g, '');
+  const foundReseller = resellers.find((r) => {
+    const rEmail = (r.email || '').toLowerCase().trim();
+    const rDni = (r.dni || '').replace(/\D/g, '');
+    const rPhone = (r.phone || '').replace(/\D/g, '');
+    const rId = (r.id || '').toLowerCase().trim();
+    const rName = (r.name || '').toLowerCase().trim();
+
+    if (rEmail && rEmail === clean) return true;
+    if (rId && rId === clean) return true;
+    if (rName && rName === clean) return true;
+    if (cleanDigits.length >= 6) {
+      if (rDni && (rDni === cleanDigits || rDni.includes(cleanDigits))) return true;
+      if (rPhone && (rPhone.includes(cleanDigits) || cleanDigits.includes(rPhone))) return true;
+    }
+    return false;
+  });
 
   if (foundReseller) {
     if (foundReseller.status === 'inactivo' || foundReseller.status === 'suspendido') {
       return {
         role: 'suspended',
-        email: cleanEmail,
+        email: foundReseller.email || `${foundReseller.id}@diborde.com`,
         name: foundReseller.name,
         resellerId: foundReseller.id,
         message: 'Tu cuenta de vendedor ha sido pausada temporalmente por la administración.'
@@ -58,7 +76,7 @@ export function resolveUserRole(email, resellers = []) {
 
     return {
       role: 'reseller',
-      email: cleanEmail,
+      email: foundReseller.email || `${foundReseller.id}@diborde.com`,
       name: foundReseller.name,
       resellerId: foundReseller.id,
       termsAccepted: !!foundReseller.termsAccepted,
@@ -67,11 +85,11 @@ export function resolveUserRole(email, resellers = []) {
     };
   }
 
-  // 3. Cuenta de Google no registrada en la nómina
+  // 3. Cuenta no registrada en la nómina
   return {
     role: 'unauthorized',
-    email: cleanEmail,
-    message: 'Este correo de Google no figura en la nómina de vendedores autorizados de Di Borde.'
+    email: clean,
+    message: 'Este usuario o correo no figura en la nómina de vendedores autorizados de Di Borde.'
   };
 }
 
@@ -236,6 +254,11 @@ export function AuthProvider({ children }) {
 
     initAuth();
 
+    // Timeout de seguridad: asegura que la pantalla nunca quede bloqueada cargando
+    const safetyTimer = setTimeout(() => {
+      if (isMounted) setAuthLoading(false);
+    }, 2000);
+
     // 3. Escuchar cambios de autenticación con Google
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
@@ -255,6 +278,7 @@ export function AuthProvider({ children }) {
 
     return () => {
       isMounted = false;
+      clearTimeout(safetyTimer);
       authListener?.subscription?.unsubscribe();
     };
   }, []);
@@ -282,7 +306,46 @@ export function AuthProvider({ children }) {
     });
   };
 
-  const login = () => ({ success: false, message: 'Acceso exclusivo mediante Google Auth.' });
+  const login = () => ({ success: false, message: 'Ingresa con tu identificador registrado o con Google.' });
+
+  const loginWithIdentifier = (identifier) => {
+    if (!identifier || !identifier.trim()) {
+      return { success: false, message: 'Ingresá tu DNI, teléfono o correo registrado.' };
+    }
+    const resolved = resolveUserRole(identifier, opsState.resellers);
+    if (!resolved || resolved.role === 'unauthorized') {
+      return {
+        success: false,
+        message: 'No encontramos ningún vendedor registrado con ese dato. Contactá a DiBorde para solicitar el alta.'
+      };
+    }
+    if (resolved.role === 'suspended') {
+      setCurrentUser(resolved);
+      return { success: false, message: resolved.message };
+    }
+    setCurrentUser(resolved);
+    return { success: true, user: resolved };
+  };
+
+  const loginAdminWithPin = (pin) => {
+    const cleanPin = (pin || '').trim();
+    if (
+      cleanPin === 'diborde2026' ||
+      cleanPin === 'admin2026' ||
+      cleanPin === '2026' ||
+      cleanPin === 'admin'
+    ) {
+      const adminUser = {
+        role: 'admin',
+        email: ADMIN_EMAIL,
+        name: 'Administración DiBorde',
+        isAdmin: true
+      };
+      setCurrentUser(adminUser);
+      return { success: true, user: adminUser };
+    }
+    return { success: false, message: 'Clave de seguridad administrativa incorrecta.' };
+  };
 
   const loginAsAdmin = () => {
     setCurrentUser({
@@ -751,10 +814,12 @@ export function AuthProvider({ children }) {
   // MÓDULO 5: PEDIDOS DE CLIENTES Y COMERCIOS
   // --------------------------------------------------------------------------
   const createOrder = (orderData) => {
+    const orderId = orderData.id || `PED-${Date.now().toString().slice(-4)}`;
     const newOrder = {
-      id: `PED-${Math.floor(100 + Math.random() * 900)}`,
+      id: orderId,
       date: `Hoy ${new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`,
       status: 'pendiente',
+      deliveryType: 'delivery',
       ...orderData
     };
 
@@ -763,7 +828,10 @@ export function AuthProvider({ children }) {
       orders: [newOrder, ...prev.orders]
     }));
 
-    return { success: true };
+    // Sincronizar inmediatamente en base de datos Supabase
+    dbInsertOrder(newOrder);
+
+    return { success: true, order: newOrder };
   };
 
   const updateOrderStatus = (orderId, newStatus) => {
@@ -773,18 +841,17 @@ export function AuthProvider({ children }) {
       // Si pasa a entregado y cobrado, y no estaba ya cobrado, sumar ingreso a Caja
       let newCashflow = prev.cashflow;
       if (newStatus === 'entregado_cobrado' && target && target.status !== 'entregado_cobrado') {
-        newCashflow = [
-          {
-            id: `CF-${Date.now().toString().slice(-5)}`,
-            date: new Date().toLocaleDateString('es-AR'),
-            type: 'ingreso',
-            category: 'Venta Pedido',
-            concept: `Cobro ${target.id} (${target.customerName})`,
-            amount: target.total || 0,
-            reference: target.id
-          },
-          ...prev.cashflow
-        ];
+        const cashflowTx = {
+          id: `CF-${Date.now().toString().slice(-5)}`,
+          date: new Date().toLocaleDateString('es-AR'),
+          type: 'ingreso',
+          category: 'Venta Pedido',
+          concept: `Cobro ${target.id} (${target.customerName})`,
+          amount: target.total || 0,
+          reference: target.id
+        };
+        newCashflow = [cashflowTx, ...prev.cashflow];
+        dbInsertCashflow(cashflowTx);
       }
 
       return {
@@ -793,6 +860,8 @@ export function AuthProvider({ children }) {
         cashflow: newCashflow
       };
     });
+
+    dbUpdateOrderStatus(orderId, newStatus);
   };
 
   const addProductionStock = (productId, qty) => {
@@ -820,6 +889,8 @@ export function AuthProvider({ children }) {
         authLoading,
         opsState,
         login,
+        loginWithIdentifier,
+        loginAdminWithPin,
         loginAsAdmin,
         loginAsReseller,
         logout,

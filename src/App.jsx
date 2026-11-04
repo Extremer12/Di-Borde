@@ -7,6 +7,7 @@ import FloatingCartBar from './components/FloatingCartBar.jsx';
 import OrderModal from './components/OrderModal.jsx';
 import Toast from './components/Toast.jsx';
 import InstallPwaPrompt from './components/InstallPwaPrompt.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 
 // Public Views
 import HomeView from './views/HomeView.jsx';
@@ -146,10 +147,7 @@ function MainLayout() {
     switch (currentRoute) {
       case '/vendedor':
       case '/vendedores':
-        if (currentUser?.role === 'admin') {
-          return <AdminDashboard />;
-        }
-        return currentUser && currentUser.role === 'reseller' ? (
+        return currentUser && (currentUser.role === 'reseller' || currentUser.role === 'admin') ? (
           <ResellerDashboard />
         ) : (
           <PortalLoginView />
@@ -217,10 +215,12 @@ function MainLayout() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <MainLayout />
-      </CartProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <CartProvider>
+          <MainLayout />
+        </CartProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

@@ -155,16 +155,21 @@ export function CartProvider({ children }) {
   const freeShippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
 
   // Generador de mensaje de WhatsApp con formato prolijo
-  const buildWhatsAppUrl = (customer = {}, deliveryType = 'delivery', channelOverride = null) => {
+  const buildWhatsAppUrl = (customer = {}, deliveryType = 'delivery', channelOverride = null, orderId = null) => {
     const deliveryCost = deliveryType === 'pickup' ? 0 : shippingCost;
     const finalTotal = Math.max(0, subtotal - discount + deliveryCost);
 
     let lines = [];
-    lines.push('*PEDIDO - DI BORDE*');
+    if (orderId) {
+      lines.push(`*NUEVO PEDIDO WEB #${orderId} - DI BORDE*`);
+      lines.push('Registrado automáticamente en el sistema ✓');
+    } else {
+      lines.push('*PEDIDO - DI BORDE*');
+    }
     lines.push('------------------------------------');
-    if (customer.name) lines.push(`*Nombre:* ${customer.name}`);
+    if (customer.name) lines.push(`*Cliente:* ${customer.name}`);
     if (customer.phone) lines.push(`*Teléfono:* ${customer.phone}`);
-    lines.push(`*Modalidad:* ${deliveryType === 'pickup' ? 'Retiro en Obrador' : 'Envío a Domicilio'}`);
+    lines.push(`*Modalidad:* ${deliveryType === 'pickup' ? 'Retiro en Obrador (Chimbas)' : 'Envío a Domicilio'}`);
     if (deliveryType !== 'pickup' && customer.address) {
       lines.push(`*Dirección:* ${customer.address}`);
     }
@@ -195,7 +200,7 @@ export function CartProvider({ children }) {
     }
 
     lines.push('');
-    lines.push('Hola Di Borde, envío mi pedido para coordinar la entrega.');
+    lines.push('Hola Di Borde, envío mi pedido web para coordinar la entrega.');
 
     const encoded = encodeURIComponent(lines.join('\n'));
     return `https://wa.me/${DI_BORDE_WHATSAPP_PHONE}?text=${encoded}`;
